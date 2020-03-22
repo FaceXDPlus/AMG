@@ -1,0 +1,9 @@
+.vscode
+.vs
+Library/
+testFile/
+Temp/
+Logs/Packages-Update.log
+Assets/DlibFaceLandmarkDetector
+Assets/OpenCVForUnity
+Assets/Live2D
