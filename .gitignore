@@ -7,3 +7,8 @@ Logs/Packages-Update.log
 Assets/DlibFaceLandmarkDetector
 Assets/OpenCVForUnity
 Assets/Live2D
+Packages/
+packages.config
+Assets/StreamingAssets/Model/xccc/
+Assets/StreamingAssets/Model/xccc.meta
+Assets/StreamingAssets/Model.meta

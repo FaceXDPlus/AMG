@@ -1,4 +1,5 @@
 ﻿using Live2D.Cubism.Core;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace D2LiveManager.Live2DCubism3
@@ -22,6 +23,8 @@ namespace D2LiveManager.Live2DCubism3
         }
 
         [Header ("[Setting]")]
+
+        public bool isModelChanged = false;
 
         public Vector3 offsetAngle;
 
@@ -71,9 +74,17 @@ namespace D2LiveManager.Live2DCubism3
             NullCheck (headRotationGetterInterface, "headRotationGetter");
             NullCheck (target, "target");
 
-            paramAngleX = target.Parameters.FindById("PARAM_ANGLE_X");
-            paramAngleY = target.Parameters.FindById("PARAM_ANGLE_Y");
-            paramAngleZ = target.Parameters.FindById("PARAM_ANGLE_Z");
+            getParameters();
+        }
+
+        public void getParameters()
+        {
+            var jsonDataPath = Application.streamingAssetsPath + "/Parameters.json";
+            JObject jsonParams = D2LiveParametersController.getParametersJson(jsonDataPath);
+
+            paramAngleX = D2LiveParametersController.getParametersFromJson("paramAngleX", jsonParams, target);
+            paramAngleY = D2LiveParametersController.getParametersFromJson("paramAngleY", jsonParams, target);
+            paramAngleZ = D2LiveParametersController.getParametersFromJson("paramAngleZ", jsonParams, target);
         }
 
         public override void LateUpdateValue ()
@@ -83,6 +94,10 @@ namespace D2LiveManager.Live2DCubism3
             if (target == null)
                 return;
 
+            if (isModelChanged)
+            {
+                getParameters();
+            }
 
             if (headRotationGetterInterface.GetHeadEulerAngles () != Vector3.zero) {
                 headEulerAngles = headRotationGetterInterface.GetHeadEulerAngles ();

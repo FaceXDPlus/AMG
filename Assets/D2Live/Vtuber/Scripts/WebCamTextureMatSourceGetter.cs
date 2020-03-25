@@ -126,5 +126,12 @@ namespace D2LiveManager
                 webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.IsFrontFacing ();
             }
         }
+
+        public virtual void ChangeCameraTo (int nextCameraIndex)
+        {
+            webCamTextureToMatHelper.requestedDeviceName = nextCameraIndex.ToString();
+            webCamTextureToMatHelper.Initialize();
+            didUpdateResultMat = false;
+        }
     }
 }

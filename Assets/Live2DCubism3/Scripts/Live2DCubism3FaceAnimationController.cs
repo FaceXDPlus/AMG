@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Live2D.Cubism.Core;
+using Newtonsoft.Json.Linq;
 
 namespace D2LiveManager.Live2DCubism3
 {
@@ -8,6 +9,8 @@ namespace D2LiveManager.Live2DCubism3
     {
         
         [Header ("[Target]")]
+
+        public bool isModelChanged = false;
 
         public CubismModel live2DCubism3Model;
 
@@ -36,6 +39,11 @@ namespace D2LiveManager.Live2DCubism3
             if (live2DCubism3Model == null)
                 return;
 
+            if (isModelChanged)
+            {
+                getParameters();
+            }
+
             if (enableEye) {
                 paramEyeLOpen.Value = Mathf.Lerp (0.0f, 1.0f, EyeParam);
                 paramEyeROpen.Value = Mathf.Lerp(0.0f, 1.0f, EyeParam);
@@ -63,16 +71,32 @@ namespace D2LiveManager.Live2DCubism3
 
             NullCheck (live2DCubism3Model, "live2DCubism3Model");
 
-            paramEyeLOpen = live2DCubism3Model.Parameters.FindById("PARAM_EYE_L_OPEN");
-            paramEyeROpen = live2DCubism3Model.Parameters.FindById("PARAM_EYE_R_OPEN");
-            paramBrowLY = live2DCubism3Model.Parameters.FindById("PARAM_BROW_L_Y");
-            paramBrowRY = live2DCubism3Model.Parameters.FindById("PARAM_BROW_R_Y");
-            paramMouthOpenY = live2DCubism3Model.Parameters.FindById("PARAM_MOUTH_OPEN_Y");
-            paramMouthForm = live2DCubism3Model.Parameters.FindById("PARAM_MOUTH_FORM");
+
+            getParameters();
+        }
+
+        public void getParameters()
+        {
+            var jsonDataPath = Application.streamingAssetsPath + "/Parameters.json";
+            JObject jsonParams = D2LiveParametersController.getParametersJson(jsonDataPath);
+
+            paramEyeLOpen = D2LiveParametersController.getParametersFromJson("paramEyeLOpen", jsonParams, live2DCubism3Model);
+            paramEyeROpen = D2LiveParametersController.getParametersFromJson("paramEyeROpen", jsonParams, live2DCubism3Model);
+
+
+            paramBrowLY = D2LiveParametersController.getParametersFromJson("paramBrowLY", jsonParams, live2DCubism3Model);
+            paramBrowRY = D2LiveParametersController.getParametersFromJson("paramBrowRY", jsonParams, live2DCubism3Model);
+            paramMouthOpenY = D2LiveParametersController.getParametersFromJson("paramMouthOpenY", jsonParams, live2DCubism3Model);
+            paramMouthForm = D2LiveParametersController.getParametersFromJson("paramMouthForm", jsonParams, live2DCubism3Model);
         }
 
         protected override void UpdateFaceAnimation (List<Vector2> points)
         {
+            if (isModelChanged)
+            {
+                getParameters();
+            }
+
             if (enableEye) {
                 float eyeOpen = (GetLeftEyeOpenRatio (points) + GetRightEyeOpenRatio (points)) / 2.0f;
                 //Debug.Log ("eyeOpen " + eyeOpen);
