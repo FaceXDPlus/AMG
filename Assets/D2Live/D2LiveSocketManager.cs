@@ -54,7 +54,7 @@ namespace D2Live
                 Loom.RunAsync(
                 () =>
                 {
-                    _thClientMsg = new Thread(ClientMsg);
+                    _thClientMsg = new Thread(BuildSever);
                     _IsListionContect = true;
                     _thClientMsg.Start();
                     Debug.Log("服务器已经启动...");
@@ -71,13 +71,21 @@ namespace D2Live
             }
         }
 
+        private void BuildSever()
+        {
+            while (_IsListionContect)
+            {
+                Socket socket = _ServerSocket.Accept();
+                Debug.Log("连接到" + socket.RemoteEndPoint);
+                ClientMsg(socket);
+            }
+        }
         /// <summary>
         /// 服务器端和客户端通信的后天线程
         /// </summary>
         /// <param name="?"></param>
-        public void ClientMsg()
+        public void ClientMsg(Socket socketMsg)
         {
-            Socket socketMsg = _ServerSocket.Accept();
             while (_IsListionContect)
             {
                 Debug.Log("连接到" + socketMsg.RemoteEndPoint);
@@ -107,8 +115,8 @@ namespace D2Live
                             _statusText.text = "等待连接";
                         }, null);
                         Debug.Log("接收失败 关闭连接");
-                        socketMsg.Shutdown(SocketShutdown.Both);
-                        socketMsg.Close();
+                        //socketMsg.Shutdown(SocketShutdown.Both);
+                        //socketMsg.Close();
                         break;
                     }
                     string strMsg = Encoding.UTF8.GetString(msyArray, 0, receiveNumber);
@@ -126,6 +134,7 @@ namespace D2Live
                     socketMsg.Shutdown(SocketShutdown.Both);
                     socketMsg.Close();
                     break;*/
+                    break;
                 }
             }
         }
@@ -160,60 +169,27 @@ namespace D2Live
             }
         }
 
-        public class FaceXDJson
-        {
-            public float mouthOpenY { get; set; }
-            public float eyeROpen { get; set; }
-            public float eyeLOpen { get; set; }
-            public float eyeX { get; set; }
-            public float eyeY { get; set; }
-            public float headYaw { get; set; }
-            public float headPitch { get; set; }
-            public float headRoll { get; set; }
-            public float bodyAngleX { get; set; }
-            public float bodyAngleY { get; set; }
-            public float bodyAngleZ { get; set; }
-            public float eyeBrowAngleL { get; set; }
-            public float eyeBrowAngleR { get; set; }
-            public float mouthForm { get; set; }
-            public float eyeBrowYR { get; set; }
-            public float eyeBrowYL { get; set; }
-            [JsonIgnore]
-            public blendShapes blendShapes { get; set; }
-        }
-
-        public class blendShapes
-        {
-
-        }
-
-        public static T JsonDeSerializerObj<T>(string strJson)
-        {
-            T t = JsonConvert.DeserializeObject<T>(strJson);
-            return t;
-        }
-
         public void doJsonPrase(string input)
         {
             Debug.Log("解析 JSON ...." + input);
 
-            var jsonResult = JsonConvert.DeserializeObject<FaceXDJson>(input);
-            _D2LiveModelController.paramMouthOpenYValue = jsonResult.mouthOpenY;
-            _D2LiveModelController.ParamEyeBallXValue = jsonResult.eyeX;
-            _D2LiveModelController.ParamEyeBallYValue = jsonResult.eyeY;
-            _D2LiveModelController.paramAngleXValue = jsonResult.headYaw;
-            _D2LiveModelController.paramAngleYValue = jsonResult.headPitch;
-            _D2LiveModelController.paramAngleZValue = jsonResult.headRoll;
-            _D2LiveModelController.ParamBodyAngleXValue = jsonResult.bodyAngleX;
-            _D2LiveModelController.ParamBodyAngleYValue = jsonResult.bodyAngleY;
-            _D2LiveModelController.ParamBodyAngleZValue = jsonResult.bodyAngleZ;
-            _D2LiveModelController.paramBrowAngleLValue = jsonResult.eyeBrowAngleL;
-            _D2LiveModelController.paramBrowAngleRValue = jsonResult.eyeBrowAngleR;
-            _D2LiveModelController.paramMouthFormValue = jsonResult.mouthForm;
-            _D2LiveModelController.paramBrowRYValue = jsonResult.eyeBrowYR;
-            _D2LiveModelController.paramBrowLYValue = jsonResult.eyeBrowYL;
-            _D2LiveModelController.paramEyeROpenValue = jsonResult.eyeROpen;
-            _D2LiveModelController.paramEyeLOpenValue = jsonResult.eyeLOpen;
+            var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
+            _D2LiveModelController.paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
+            _D2LiveModelController.ParamEyeBallXValue   = float.Parse(jsonResult["eyeX"].ToString());
+            _D2LiveModelController.ParamEyeBallYValue   = float.Parse(jsonResult["eyeY"].ToString());
+            _D2LiveModelController.paramAngleXValue     = float.Parse(jsonResult["headYaw"].ToString());
+            _D2LiveModelController.paramAngleYValue     = float.Parse(jsonResult["headPitch"].ToString());
+            _D2LiveModelController.paramAngleZValue     = float.Parse(jsonResult["headRoll"].ToString());
+            _D2LiveModelController.ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
+            _D2LiveModelController.ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
+            _D2LiveModelController.ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
+            _D2LiveModelController.paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
+            _D2LiveModelController.paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
+            _D2LiveModelController.paramMouthFormValue  = float.Parse(jsonResult["mouthForm"].ToString());
+            _D2LiveModelController.paramBrowRYValue     = float.Parse(jsonResult["eyeBrowYR"].ToString());
+            _D2LiveModelController.paramBrowLYValue     = float.Parse(jsonResult["eyeBrowYL"].ToString());
+            _D2LiveModelController.paramEyeROpenValue   = float.Parse(jsonResult["eyeROpen"].ToString());
+            _D2LiveModelController.paramEyeLOpenValue   = float.Parse(jsonResult["eyeLOpen"].ToString());
         }
     }
 }
