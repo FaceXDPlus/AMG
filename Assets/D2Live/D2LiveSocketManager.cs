@@ -26,7 +26,7 @@ namespace D2Live
             if (_ServerSocket != null)
             {
                 _IsListionContect = false;
-                //_ServerSocket.Shutdown(SocketShutdown.Both)
+                _ServerSocket.Shutdown(SocketShutdown.Both);
                 _ServerSocket.Close();
                 if (_thClientMsg != null)
                 {
@@ -41,15 +41,10 @@ namespace D2Live
             _statusText = statusText;
             try
             {
-                //定义网络终节点（封装IP和端口）
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8040);
-                //实例化套接字
                 _ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                //服务端绑定地址
                 _ServerSocket.Bind(endPoint);
-                //开始监听
                 _ServerSocket.Listen(1);
-                //监听的最大长度
                 Debug.Log("启动监听{0}成功" + _ServerSocket.LocalEndPoint.ToString());
                 Loom.RunAsync(
                 () =>
