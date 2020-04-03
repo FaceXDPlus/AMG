@@ -12,3 +12,4 @@ packages.config
 Assets/StreamingAssets/Model/xccc/
 Assets/StreamingAssets/Model/xccc.meta
 Assets/StreamingAssets/Model.meta
+*.meta
