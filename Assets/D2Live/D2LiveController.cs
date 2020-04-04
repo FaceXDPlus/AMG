@@ -12,6 +12,7 @@ using System.IO;
 using Live2D.Cubism.Rendering;
 using EventSystem = UnityEngine.EventSystems.EventSystem;
 using UnityEditor;
+using MaterialUI;
 
 namespace D2Live
 {
@@ -25,7 +26,8 @@ namespace D2Live
         public FaceAnimationController FaceAnimationController;
         public WebCamTextureToMatHelper WebCamTextureToMatHelper;
         public Toggle socketSwitch;
-        public Dropdown dropDownItem;
+        public MaterialDropdown dropDownItem;
+        public MaterialButton dropDownButton;
         public Text statusText ;
         public RawImage rawImage;
 
@@ -37,18 +39,8 @@ namespace D2Live
         // Start is called before the first frame update
         void Start()
         {
-            dropDownItem.options.Clear();
-            Dropdown.OptionData temoData;
-            for (int i = 0; i < WebCamTexture.devices.Length; i++)
-            {
-                //给每一个option选项赋值
-                temoData = new Dropdown.OptionData();
-                temoData.text = WebCamTexture.devices[i].name;
-                //temoData.image = sprite_ilist[i];
-                dropDownItem.options.Add(temoData);
-            }
-            //初始选项的显示
-            dropDownItem.captionText.text = WebCamTexture.devices[0].name;
+            //更新相机下拉
+            updateDropDown();
         }
 
         // Update is called once per frame
@@ -57,16 +49,33 @@ namespace D2Live
 
         }
 
-        public void OnToggleSwitched()
+        public void updateDropDown()
+        {
+            dropDownItem.ClearData();
+            MaterialUI.OptionData temoData;
+            temoData = new MaterialUI.OptionData();
+            temoData.text = "None";
+            dropDownItem.AddData(temoData);
+            for (int i = 0; i < WebCamTexture.devices.Length; i++)
+            {
+                //给每一个option选项赋值
+                temoData = new MaterialUI.OptionData();
+                temoData.text = WebCamTexture.devices[i].name;
+                dropDownItem.AddData(temoData);
+            }
+            //初始选项的显示
+            dropDownItem.buttonTextContent.text = "None";
+        }
+
+        public void OnSocketSwitchSwitched()
         {
             if (socketSwitch.isOn == true)
             {
-                dropDownItem.enabled = false;
-                statusText.text = "等待连接";
+                //dropDownItem.enabled = false;
+                dropDownButton.interactable = false;
+                //statusText.text = "等待连接";
                 rawImage.texture = null;
                 print("Starting Socket Server");
-
-
                 webCamTextureMatSourceGetter.enabled = false;
                 DlibFaceLandmarkGetter.enabled = false;
                 FaceLandmarkHeadPositionAndRotationGetter.enabled = false;
@@ -80,8 +89,8 @@ namespace D2Live
             }
             else
             {
-                statusText.text = "已关闭";
-                dropDownItem.enabled = true;
+                //statusText.text = "已关闭";
+                dropDownButton.interactable = true;
                 print("Stopping Socket Server");
                 webCamTextureMatSourceGetter.enabled = true;
                 DlibFaceLandmarkGetter.enabled = true;
@@ -101,10 +110,15 @@ namespace D2Live
             rawImage.texture = null;
             try
             {
-                int n = dropDownItem.value;
-                print("选择了:" + dropDownItem.captionText.text + "|" + n);
-                webCamTextureMatSourceGetter.ChangeCameraTo(n);
-                webCamTextureMatSourceGetter.Play();
+                int n = dropDownItem.currentlySelected - 1;
+                if(n == -1){
+                    webCamTextureMatSourceGetter.Stop();
+                }else
+                {
+                    print("选择了:" + dropDownItem.buttonTextContent + "|" + n);
+                    webCamTextureMatSourceGetter.ChangeCameraTo(n);
+                    webCamTextureMatSourceGetter.Play();
+                }
             }
             catch (Exception err)
             {
