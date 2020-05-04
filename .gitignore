@@ -9,7 +9,12 @@ Assets/OpenCVForUnity
 Assets/Live2D
 Packages/
 packages.config
-Assets/StreamingAssets/Model/xccc/
-Assets/StreamingAssets/Model/xccc.meta
-Assets/StreamingAssets/Model.meta
+Assets/StreamingAssets/models
+Assets/StreamingAssets/models.meta
 *.meta
+Assets/MaterialUI
+Assets/UnityCam
+Assets/Plugins/x86_64/ExternalWindowPlugin.dll
+Assets/Scripts/AMGDXInterface.cs
+Assets/Scripts/Loom.cs
+Assets/Plugins
