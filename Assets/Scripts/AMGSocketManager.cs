@@ -171,6 +171,15 @@ namespace AMG
                 P2Pclient.Dispose();
             }
             Globle.AddDataLog("[WSC]客户连接已经关闭");
+            var RemoteIPMessage = ObjectCopier.Clone(Globle.RemoteIPMessage);
+            foreach (KeyValuePair<string, string> kvp in RemoteIPMessage)
+            {
+                if (kvp.Key.IndexOf("回调") > 0)
+                {
+                    Globle.RemoteIPMessage.Remove(kvp.Key);
+                }
+            }
+            Globle.globleIPChanged = true;
         }
 
 

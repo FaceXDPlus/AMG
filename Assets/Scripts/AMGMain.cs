@@ -17,16 +17,33 @@ namespace AMG
     public class Globle : MonoBehaviour
     {
         public static string APPName    = "AMG";
-        public static string APPVersion = "Alpha 0.7";
+        public static string APPVersion = "Alpha 0.8";
         public static string APPBuild   = "1";
         public static string APPHostName = Environment.GetEnvironmentVariable("computername");
         public static int ModelNum = 1;
         public static int IPNum = 0;
         public static Dictionary<string, string> ModelToIP;
         public static Dictionary<string, string> IPMessage;
+        public static Dictionary<string, string> IPAlign;
         public static Dictionary<string, string> RemoteIPMessage;
         public static bool globleIPChanged = false;
         public static string DataLog = "\n软件版本：" + APPVersion + "，构建版本：" + APPBuild;
+
+
+        public static bool KeyboardHookStart = true;
+        public static bool KeyboardHookSetStart = false;
+        public static ArrayList KeyboardPressed = new ArrayList();
+        //储存已经按下的控制键
+        public static ArrayList supportedControlKey = new ArrayList();
+        public static ArrayList supportedKeyboardKey = new ArrayList();
+
+        public static AMGShortcutItemController HookSetController;
+        public static string HookSetModelName;
+        public static string HookSetModelAnimationName;
+        //public static Dictionary<string, string> KeyboardHotkeySetDict = new Dictionary<string, string>();
+
+        public static Dictionary<ArrayList, Dictionary<string, string>> KeyboardHotkeyDict = new Dictionary<ArrayList, Dictionary<string, string>>();
+        //组合键操作 模型展示名称 动画名称
 
         public static void AddDataLog(string data)
         {
@@ -54,6 +71,7 @@ namespace AMG
         [SerializeField] private SelectionBoxConfig ModelDropdownBox;
         [SerializeField] private SelectionBoxConfig ControlModelDropdownBox;
         [SerializeField] private SelectionBoxConfig ControlIPDropdownBox;
+        [SerializeField] private SelectionBoxConfig ModelPoseBox;
 
         [SerializeField] private DialogBoxConfig DialogBox;
         [SerializeField] private Text DialogBoxTitle;
@@ -77,6 +95,7 @@ namespace AMG
         private AMGShortcutController AMGShortcutController;
         private AMGSocketManager mySocketServer;
         private AMGSocketManager myP2PClient;
+        private AMGInterceptKeys AMGInterceptKeysController;
 
         public AMGDXInterface dxInterface;
 
@@ -85,18 +104,19 @@ namespace AMG
         {
             Application.targetFrameRate = FrameRate;
         }
-        
+
         void Start()
         {
             Application.targetFrameRate = FrameRate;
 
             ModelList = new ArrayList();
             Globle.ModelToIP = new Dictionary<string, string>();
+            Globle.IPAlign = new Dictionary<string, string>();
             Globle.IPMessage = new Dictionary<string, string>();
             Globle.RemoteIPMessage = new Dictionary<string, string>();
 
             AMGController = new AMGController();
-            //AMGShortcutController = new AMGShortcutController();
+            AMGShortcutController = new AMGShortcutController();
             //初始化控制器
             AMGController.setModelDropdownBox(ModelDropdownBox);
             AMGController.setControlModelDropdownBox(ControlModelDropdownBox);
@@ -105,8 +125,8 @@ namespace AMG
             AMGController.InitDropdownBoxs();
             AMGController.RefreshModelDropdown();
             //初始化快捷键管理
-            //AMGShortcutController.setVerticalLayoutGroup(ShortcutGroup);
-            //AMGShortcutController.setExampleButton(ShortcutItem);
+            AMGShortcutController.setVerticalLayoutGroup(ShortcutGroup);
+            AMGShortcutController.setExampleButton(ShortcutItem);
 
             ControlModelDropdownBox.ItemPicked += OnControlModelSelected;
             ControlIPDropdownBox.ItemPicked += OnControlIPSelected;
@@ -114,11 +134,34 @@ namespace AMG
             APPHostNameField.text = Globle.APPHostName;
             ((InputFieldConfig)APPHostNameField.GetComponent<InputFieldConfig>()).displayText.text = Globle.APPHostName;
 
+            AMGInterceptKeysController = new AMGInterceptKeys();
+            InitKeyboardControls();
+            InitKeyboardKeys();
+            //AMGInterceptKeysController.StartHook();
 
             mySocketServer = new AMGSocketManager();
             mySocketServer.setSocketSwitch(SocketSwitch);
             myP2PClient = new AMGSocketManager();
             myP2PClient.setP2PClientSwitch(P2PClientSwitch);
+        }
+
+        public void InitKeyboardControls()
+        {
+            Globle.supportedControlKey.Add("18");//左边Alt
+            Globle.supportedControlKey.Add("160");//左边Shift
+            Globle.supportedControlKey.Add("162");//左边Ctrl
+            Globle.supportedControlKey.Add("20");//左边Caps
+            Globle.supportedControlKey.Add("93");//右边目录
+            Globle.supportedControlKey.Add("192");//左边`
+        }
+
+        public void InitKeyboardKeys()
+        {
+            for (int i = 65; i <= 90;++i)
+            {
+                Globle.supportedKeyboardKey.Add(i.ToString());
+            }
+            //65-90 a-z
         }
 
         public void onFrameRateButtonPressed()
@@ -234,6 +277,13 @@ namespace AMG
                     {
                         ControlIPDropdownBox.selectedText.text = "选择控制IP";
                     }
+
+                    AMGShortcutController.refreshVerticalLayoutGroup();
+                    foreach (string name in Model.GetComponent<AMGModelController>().animationClips)
+                    {
+                        AMGShortcutController.addVerticalLayoutGroupItem(name, Model);
+                    }
+                    //animation.Blend(animationClip.name);
                 }
             }
         }
@@ -242,7 +292,8 @@ namespace AMG
         {
             var selected = ControlIPDropdownBox.listItems[id];
             var model = AMGController.GetModelFromDropdown(ModelList);
-            if (selected != "无") {
+            if (selected != "无")
+            {
                 var modelname = ControlModelDropdownBox.selectedText.text;
                 if (Globle.IPMessage.ContainsKey(selected) || Globle.RemoteIPMessage.ContainsKey(selected))
                 {
@@ -336,13 +387,8 @@ namespace AMG
             var model = AMGController.AddModelFromDropdown();
             if (model != null)
             {
-                model.name = model.name + "(" + Globle.ModelNum.ToString() + ")";
-                Globle.ModelNum++;
-                model.gameObject.AddComponent<AMGModelController>();
                 model.GetComponent<AMGModelController>().setControlDropdownBox(ControlModelDropdownBox);
                 model.GetComponent<AMGModelController>().DisplayName = model.name;
-                var Scale = 5f;
-                model.gameObject.transform.localScale += new Vector3(Scale, Scale);
                 ModelList.Add(model);
                 AMGController.RefreshControlDropdown(ModelList);
                 AMGController.RefreshControlIPDropdown();
@@ -393,7 +439,10 @@ namespace AMG
 
         public void OnSaveButtonClick()
         {
-
+            foreach (CubismModel model in ModelList)
+            {
+                model.GetComponent<AMGModelController>();
+            }
         }
 
         public void Update()
@@ -426,20 +475,32 @@ namespace AMG
                 try
                 {
                     var ipmessage = ObjectCopier.Clone(Globle.IPMessage);
+                    var ipmessage1 = ObjectCopier.Clone(Globle.IPMessage);
+                    var ipalign = ObjectCopier.Clone(Globle.IPAlign);
+                    foreach (KeyValuePair<string, string> kvp in ipmessage)
+                    {
+                        if (ipalign.ContainsKey(kvp.Key))
+                        {
+                            var oldString = ipmessage[kvp.Key].Substring(0, ipmessage[kvp.Key].Length - 1);
+                            oldString = oldString + ipalign[kvp.Key] + "}";
+                            //var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(oldString);
+                            ipmessage1[kvp.Key] = oldString;
+                        }
+                    }
                     ArrayInfo arrayInfo = new ArrayInfo
                     {
                         hostName = Globle.APPHostName,
                         keyboardAttached = new ArrayList(),
-                        ipMessage = ipmessage
+                        ipMessage = ipmessage1
                     };
                     byte[] byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(arrayInfo));
                     myP2PClient.P2PClientSendBinary(byteArray);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //var log = "[WSC]客户连接发生错误 " + ex.Message + ":" + ex.StackTrace;
+                    var log = "[WSC]客户连接发生错误 " + ex.Message + ":" + ex.StackTrace;
                     //var log = "[WSC]客户连接发生错误 " + ex.Message ;
-                    //Globle.AddDataLog(log);
+                    Globle.AddDataLog(log);
                 }
             }
         }
@@ -448,7 +509,7 @@ namespace AMG
         {
             if ((Globle.IPNum != Globle.IPMessage.Count && !ipState) || (Globle.globleIPChanged && !ipState))
             {
-                Log("\n[Main]重新获取IP");
+                Log("\n[Main]刷新现有IP列表");
                 CloseAllDropdown();
                 ipState = true;
                 Globle.globleIPChanged = false;
@@ -484,6 +545,14 @@ namespace AMG
                                     if (IPMessage[kvp.Value] != null)
                                     {
                                         AMGController.DoJsonPrase(IPMessage[kvp.Value], Model);
+                                        if (Globle.IPAlign.ContainsKey(kvp.Value))
+                                        {
+                                            Globle.IPAlign[kvp.Value] = Model.GetComponent<AMGModelController>().getParameterAlign();
+                                        }
+                                        else
+                                        {
+                                            Globle.IPAlign.Add(kvp.Value, Model.GetComponent<AMGModelController>().getParameterAlign());
+                                        }
                                     }
                                 }
                                 else
@@ -515,6 +584,11 @@ namespace AMG
             DebugLogText.text = DebugLogText.text + text;
             //Scrollbar Scrollbar = GameObject.Find("日志下拉").GetComponent<Scrollbar>();
             DebugLogScrollbar.value = -0.0f;
+        }
+
+        public void OnApplicationQuit()
+        {
+            AMGInterceptKeysController.StopHook();
         }
     }
 }

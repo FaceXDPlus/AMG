@@ -99,6 +99,8 @@ namespace AMG
 		private Vector3 offset;
 		private SelectionBoxConfig ControlDropdownBox;
 		public string DisplayName;
+		public string ModelName;
+		public ArrayList animationClips;
 
 		public void setControlDropdownBox(SelectionBoxConfig ControlDropdownBox)
 		{
@@ -244,6 +246,23 @@ namespace AMG
 			//paramBrowAngleRAlignValue = paramBrowAngleRValue;
 			//paramMouthOpenYAlignValue = 1 - paramMouthOpenYValue;
 			//paramMouthFormAlignValue  = paramMouthFormValue;
+		}
+
+		public string getParameterAlign()
+		{
+			var returnStr =
+				getParameterAlignStr("paramAngleXAlignValue", paramAngleXAlignValue) +
+				getParameterAlignStr("paramAngleYAlignValue", paramAngleYAlignValue) +
+				getParameterAlignStr("paramAngleZAlignValue", paramAngleZAlignValue) +
+				getParameterAlignStr("paramEyeBallXAlignValue", paramEyeBallXAlignValue) +
+				getParameterAlignStr("paramEyeBallYAlignValue", paramEyeBallYAlignValue);
+			return returnStr;
+		}
+
+		public string getParameterAlignStr(string name, float value)
+		{
+			var returnStr = ",\"" + name + "\":\"" + value + "\"";
+			return returnStr;
 		}
 
 		public ArrayList getModelSettings()

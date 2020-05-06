@@ -10,6 +10,7 @@ using Live2D.Cubism.Rendering;
 using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework.MotionFade;
 using Live2D.Cubism.Framework.Motion;
+using Live2D.Cubism.Framework.Pose;
 
 namespace AMG
 {
@@ -139,66 +140,80 @@ namespace AMG
                     var ModelFullName = streamingAssetsPath;
                     var model3Json = CubismModel3Json.LoadAtPath(ModelFullName, BuiltinLoadAssetAtPath);
                     var motions = model3Json.FileReferences.Motions.Motions;
-                    var model = model3Json.ToModel();
+                    var model = model3Json.ToModel(true);
+                    var Scale = 5f;
+                    model.gameObject.transform.localScale += new Vector3(Scale, Scale);
                     CubismRenderController cubisumRenderController = model.GetComponent<CubismRenderController>();
                     cubisumRenderController.SortingMode = CubismSortingMode.BackToFrontOrder;
 
-                    /*var fadeMotions = ScriptableObject.CreateInstance<CubismFadeMotionList>();
-
-                    var k = 0;
-                    var motionDict = new Dictionary<int, CubismFadeMotionData>();
-                    for (var i = 0; i < motions.Length; ++i)
+                    //处理动画
+                    Animation animation = model.gameObject.AddComponent<Animation>();
+                    var animationClips = new ArrayList();
+                    if (motions != null)
                     {
-                        for (var j = 0; j < motions[i].Length; ++j)
+                        for (var i = 0; i < motions.Length; ++i)
                         {
-                            string streamingAssetsMotionPath = Application.streamingAssetsPath + "/models/" + ModelDropdownBox.selectedText.text + "/" + motions[i][j].File;
-                            CubismMotion3Json cubismMotion3Json = CubismMotion3Json.LoadFrom(File.ReadAllText(streamingAssetsMotionPath));
-                            AnimationClip animationClip = cubismMotion3Json.ToAnimationClip(new AnimationClip{
-                                legacy = true
-                            }, false, false, false, null);
-                            animationClip.name = motions[i][j].File;
-                            CubismFadeMotionData cubismFadeMotionData = CubismFadeMotionData.CreateInstance(cubismMotion3Json, motions[i][j].File, animationClip.length, false, false);
-
-                            motionDict.Add(k, cubismFadeMotionData);
-                            k++;
-
-                            //model.gameObject.GetComponent<CubismMotionController>().PlayAnimation(animationClip, isLoop: false);
-                            Debug.Log(motions[i][j].File);
-                            Debug.Log(animationClip.name);
-                        }
-                    }
-
-
-                    fadeMotions.MotionInstanceIds = new int[k];
-                    fadeMotions.CubismFadeMotionObjects = new CubismFadeMotionData[k];
-                    foreach (KeyValuePair<int, CubismFadeMotionData> kvp in motionDict)
-                    {
-                        fadeMotions.CubismFadeMotionObjects[kvp.Key] = kvp.Value;
-                    }
-
-
-                    model.gameObject.AddComponent<CubismMotionController>();
-                    CubismFadeController cubismFadeController = model.GetComponent<CubismFadeController>();
-                    cubismFadeController.CubismFadeMotionList = fadeMotions;
-
-                    for (var i = 0; i < motions.Length; ++i)
-                    {
-                        for (var j = 0; j < motions[i].Length; ++j)
-                        {
-                            string streamingAssetsMotionPath = Application.streamingAssetsPath + "/models/" + ModelDropdownBox.selectedText.text + "/" + motions[i][j].File;
-                            CubismMotion3Json cubismMotion3Json = CubismMotion3Json.LoadFrom(File.ReadAllText(streamingAssetsMotionPath));
-                            AnimationClip animationClip = cubismMotion3Json.ToAnimationClip(new AnimationClip
+                            for (var j = 0; j < motions[i].Length; ++j)
                             {
-                                legacy = true
-                            }, false, false, false, null);
-                            animationClip.name = motions[i][j].File;
-                            model.gameObject.GetComponent<CubismMotionController>().PlayAnimation(animationClip, isLoop: false);
-                            //Debug.Log(motions[i][j].File);
-                            Debug.Log(animationClip.name);
+                                string streamingAssetsMotionPath = Application.streamingAssetsPath + "/models/" + ModelDropdownBox.selectedText.text + "/" + motions[i][j].File;
+                                CubismMotion3Json cubismMotion3Json = CubismMotion3Json.LoadFrom(File.ReadAllText(streamingAssetsMotionPath));
+                                AnimationClip animationClip = cubismMotion3Json.ToAnimationClip(new AnimationClip
+                                {
+                                    legacy = true
+                                }, false, false, false, null);
+                                var name = motions[i][j].File.Substring(0, motions[i][j].File.Length - 13);
+                                animationClip.name = name;
+                                animation.AddClip(animationClip, animationClip.name);
+                                animationClips.Add(animationClip.name);
+                                //animation.Blend(animationClip.name);
+                            }
                         }
-                    }*/
+                    }
+
+                    //处理姿势
+                    var pose3Json = model3Json.Pose3Json;
+                    if (pose3Json != null)
+                    {
+                        var groups = pose3Json.Groups;
+                        var parts = model.Parts;
+                        for (var groupIndex = 0; groupIndex < groups.Length; ++groupIndex)
+                        {
+                            var group = groups[groupIndex];
+                            if (group == null)
+                            {
+                                continue;
+                            }
+
+                            for (var partIndex = 0; partIndex < group.Length; ++partIndex)
+                            {
+                                var part = parts.FindById(group[partIndex].Id);
+
+                                if (part == null)
+                                {
+                                    continue;
+                                }
+
+                                var posePart = part.gameObject.GetComponent<CubismPosePart>();
+
+                                if (posePart == null)
+                                {
+                                    posePart = part.gameObject.AddComponent<CubismPosePart>();
+                                }
+
+                                posePart.GroupIndex = groupIndex;
+                                posePart.PartIndex = partIndex;
+                                posePart.Link = group[partIndex].Link;
+                            }
+                        }
+                        model.GetComponent<CubismPoseController>().Refresh();
+                    }
 
 
+                    model.name = model.name + "(" + Globle.ModelNum.ToString() + ")";
+                    Globle.ModelNum++;
+                    var modelController = model.gameObject.AddComponent<AMGModelController>();
+                    modelController.DisplayName = model.name;
+                    modelController.animationClips = animationClips;
                     return model;
                 }
                 else
@@ -207,8 +222,10 @@ namespace AMG
                 }
             }
             catch (Exception err) {
+                //Globle.AddDataLog("[Main]添加模型发生错误" + err.Message + " : " + err.StackTrace);
                 DialogBoxTitle.text = @"错误";
-                DialogBoxText.text = err.Message + "\n" + err.StackTrace;
+                //DialogBoxText.text = err.Message + "\n" + err.StackTrace;
+                DialogBoxText.text = err.Message;
                 DialogBox.Open();
             }
             return null;
@@ -229,25 +246,30 @@ namespace AMG
 
         public void DoJsonPrase(string input, CubismModel model)
         {
-            if (input.Substring(0, 1) == "{" && input.Substring(input.Length - 2, 2) == "}}")
+            var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
+            model.GetComponent<AMGModelController>().paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
+            model.GetComponent<AMGModelController>().ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
+            model.GetComponent<AMGModelController>().ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
+            model.GetComponent<AMGModelController>().paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
+            model.GetComponent<AMGModelController>().paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
+            model.GetComponent<AMGModelController>().paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
+            //model.GetComponent<AMGModelController>().ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
+            //model.GetComponent<AMGModelController>().ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
+            //model.GetComponent<AMGModelController>().ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
+            model.GetComponent<AMGModelController>().paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
+            model.GetComponent<AMGModelController>().paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
+            model.GetComponent<AMGModelController>().paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
+            if (jsonResult.Property("paramAngleXAlignValue") != null)
             {
-                var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
-                model.GetComponent<AMGModelController>().paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
-                model.GetComponent<AMGModelController>().ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
-                model.GetComponent<AMGModelController>().ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
-                model.GetComponent<AMGModelController>().paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
-                model.GetComponent<AMGModelController>().paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
-                model.GetComponent<AMGModelController>().paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
-                //model.GetComponent<AMGModelController>().ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
-                //model.GetComponent<AMGModelController>().ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
-                //model.GetComponent<AMGModelController>().ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
-                model.GetComponent<AMGModelController>().paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
-                model.GetComponent<AMGModelController>().paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
-                model.GetComponent<AMGModelController>().paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
-                model.GetComponent<AMGModelController>().paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
-                model.GetComponent<AMGModelController>().paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
-                model.GetComponent<AMGModelController>().paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
-                model.GetComponent<AMGModelController>().paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleXAlignValue = float.Parse(jsonResult["paramAngleXAlignValue"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleYAlignValue = float.Parse(jsonResult["paramAngleYAlignValue"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleZAlignValue = float.Parse(jsonResult["paramAngleZAlignValue"].ToString());
+                model.GetComponent<AMGModelController>().paramEyeBallXAlignValue = float.Parse(jsonResult["paramEyeBallXAlignValue"].ToString());
+                model.GetComponent<AMGModelController>().paramEyeBallYAlignValue = float.Parse(jsonResult["paramEyeBallYAlignValue"].ToString());
             }
         }
 
