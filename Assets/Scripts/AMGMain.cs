@@ -14,42 +14,6 @@ using UnityEngine.UI;
 
 namespace AMG
 {
-    public class Globle : MonoBehaviour
-    {
-        public static string APPName    = "AMG";
-        public static string APPVersion = "Alpha 0.8";
-        public static string APPBuild   = "1";
-        public static string APPHostName = Environment.GetEnvironmentVariable("computername");
-        public static int ModelNum = 1;
-        public static int IPNum = 0;
-        public static Dictionary<string, string> ModelToIP;
-        public static Dictionary<string, string> IPMessage;
-        public static Dictionary<string, string> IPAlign;
-        public static Dictionary<string, string> RemoteIPMessage;
-        public static bool globleIPChanged = false;
-        public static string DataLog = "\n软件版本：" + APPVersion + "，构建版本：" + APPBuild;
-
-
-        public static bool KeyboardHookStart = true;
-        public static bool KeyboardHookSetStart = false;
-        public static ArrayList KeyboardPressed = new ArrayList();
-        //储存已经按下的控制键
-        public static ArrayList supportedControlKey = new ArrayList();
-        public static ArrayList supportedKeyboardKey = new ArrayList();
-
-        public static AMGShortcutItemController HookSetController;
-        public static string HookSetModelName;
-        public static string HookSetModelAnimationName;
-        //public static Dictionary<string, string> KeyboardHotkeySetDict = new Dictionary<string, string>();
-
-        public static Dictionary<ArrayList, Dictionary<string, string>> KeyboardHotkeyDict = new Dictionary<ArrayList, Dictionary<string, string>>();
-        //组合键操作 模型展示名称 动画名称
-
-        public static void AddDataLog(string data)
-        {
-            DataLog = DataLog +  "\n" + data;
-        }
-    }
     public class AMGMain : MonoBehaviour
     {
         [SerializeField] private Camera mainCamera;
@@ -137,7 +101,7 @@ namespace AMG
             AMGInterceptKeysController = new AMGInterceptKeys();
             InitKeyboardControls();
             InitKeyboardKeys();
-            //AMGInterceptKeysController.StartHook();
+            AMGInterceptKeysController.StartHook();
 
             mySocketServer = new AMGSocketManager();
             mySocketServer.setSocketSwitch(SocketSwitch);
@@ -147,12 +111,18 @@ namespace AMG
 
         public void InitKeyboardControls()
         {
-            Globle.supportedControlKey.Add("18");//左边Alt
-            Globle.supportedControlKey.Add("160");//左边Shift
-            Globle.supportedControlKey.Add("162");//左边Ctrl
-            Globle.supportedControlKey.Add("20");//左边Caps
-            Globle.supportedControlKey.Add("93");//右边目录
-            Globle.supportedControlKey.Add("192");//左边`
+            Globle.supportedControlKey.Add("18".ToString());//左边Alt
+            Globle.KeyTranslation.Add(18, "Alt(L)");
+            Globle.supportedControlKey.Add("160".ToString());//左边Shift
+            Globle.KeyTranslation.Add(160, "Shift(L)");
+            Globle.supportedControlKey.Add("162".ToString());//左边Ctrl
+            Globle.KeyTranslation.Add(162, "Ctrl(L)");
+            Globle.supportedControlKey.Add("20".ToString());//左边Caps
+            Globle.KeyTranslation.Add(20, "Caps(L)");
+            Globle.supportedControlKey.Add("93".ToString());//右边目录
+            Globle.KeyTranslation.Add(93, "Menu(R)");
+            Globle.supportedControlKey.Add("192".ToString());//左边`
+            Globle.KeyTranslation.Add(192, "`");
         }
 
         public void InitKeyboardKeys()
@@ -160,6 +130,8 @@ namespace AMG
             for (int i = 65; i <= 90;++i)
             {
                 Globle.supportedKeyboardKey.Add(i.ToString());
+                var name = (char)i;
+                Globle.KeyTranslation.Add(i, name.ToString());
             }
             //65-90 a-z
         }
@@ -279,9 +251,28 @@ namespace AMG
                     }
 
                     AMGShortcutController.refreshVerticalLayoutGroup();
+                    var valueToAnimation = new Dictionary<string, string>();
+                    foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
+                    {
+                        foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                        {
+                            if (kkvp.Value.Model == Model && !valueToAnimation.ContainsKey(kkvp.Value.AnimationClip))
+                            {
+                                Debug.Log("Found " + kkvp.Key);
+                                valueToAnimation.Add(kkvp.Value.AnimationClip, kkvp.Value.KeyPressed);
+                            }
+                        }
+                    }
                     foreach (string name in Model.GetComponent<AMGModelController>().animationClips)
                     {
-                        AMGShortcutController.addVerticalLayoutGroupItem(name, Model);
+                        if (valueToAnimation.ContainsKey(name))
+                        {
+                            AMGShortcutController.AddVerticalLayoutGroupItem(name, Model, valueToAnimation[name]);
+                        }
+                        else
+                        {
+                            AMGShortcutController.AddVerticalLayoutGroupItem(name, Model);
+                        }
                     }
                     //animation.Blend(animationClip.name);
                 }
@@ -392,6 +383,7 @@ namespace AMG
                 ModelList.Add(model);
                 AMGController.RefreshControlDropdown(ModelList);
                 AMGController.RefreshControlIPDropdown();
+                AMGShortcutController.refreshVerticalLayoutGroup();
                 ResetModelControllers();
             }
         }
@@ -405,6 +397,29 @@ namespace AMG
                     ModelList.Remove(Model);
                     UnityEngine.Object.Destroy(Model.gameObject.GetComponent<AMGModelController>());
                     UnityEngine.Object.Destroy(Model.gameObject);
+                    var WaitToRemove = new Dictionary<string, Dictionary<string, string>>();
+                    foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
+                    {
+                        foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                        {
+                            if (kkvp.Value.Model == Model)
+                            {
+                                UnityEngine.Debug.Log("Isset " + kkvp.Key);
+                                string iid = System.Guid.NewGuid().ToString();
+                                var dd = new Dictionary<string, string>();
+                                dd.Add(kvp.Key, kkvp.Key);
+                                WaitToRemove.Add(iid, dd);
+                            }
+                        }
+                    }
+                    foreach (KeyValuePair<string, Dictionary<string, string>> kvp in WaitToRemove)
+                    {
+                        foreach (KeyValuePair<string, string> kkvp in kvp.Value)
+                        {
+                            Globle.KeyboardHotkeyDict[kkvp.Key].Remove(kkvp.Value);
+                        }
+                    }
+                    AMGShortcutController.refreshVerticalLayoutGroup();
                     AMGController.RefreshControlDropdown(ModelList);
                     return;
                 }
@@ -587,6 +602,11 @@ namespace AMG
         }
 
         public void OnApplicationQuit()
+        {
+            AMGInterceptKeysController.StopHook();
+        }
+
+        private void OnDestroy()
         {
             AMGInterceptKeysController.StopHook();
         }

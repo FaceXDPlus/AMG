@@ -22,6 +22,12 @@ namespace AMG
 
 		[Range(-1, 1)]
 		public float paramBrowRYValue = 0;
+		
+		[Range(-1, 1)]
+		public float paramBrowLFormValue = 0;
+
+		[Range(-1, 1)]
+		public float paramBrowRFormValue = 0;
 
 		[Range(-1, 1)]
 		public float paramBrowAngleLValue = 0;
@@ -68,6 +74,8 @@ namespace AMG
 		public float paramBrowRYAlignValue = 0;
 		public float paramBrowAngleLAlignValue = 0;
 		public float paramBrowAngleRAlignValue = 0;
+		public float paramBrowLFormAlignValue = 0;
+		public float paramBrowRFormAlignValue = 0;
 		public float paramMouthOpenYAlignValue = 0;
 		public float paramMouthFormAlignValue = 0;
 		public float paramAngleXAlignValue = 0;
@@ -75,11 +83,13 @@ namespace AMG
 		public float paramAngleZAlignValue = 0;
 		public float paramEyeBallXAlignValue = 0;
 		public float paramEyeBallYAlignValue = 0;
-
+		
 		protected CubismParameter paramEyeLOpen;
 		protected CubismParameter paramEyeROpen;
 		protected CubismParameter paramBrowLY;
 		protected CubismParameter paramBrowRY;
+		protected CubismParameter paramBrowLForm;
+		protected CubismParameter paramBrowRForm; 
 		protected CubismParameter paramMouthOpenY;
 		protected CubismParameter paramMouthForm;
 		protected CubismParameter paramAngleX;
@@ -101,6 +111,13 @@ namespace AMG
 		public string DisplayName;
 		public string ModelName;
 		public ArrayList animationClips;
+
+		private Animation animations;
+		public Animation Animation   // property
+		{
+			get { return animations; }   // get method
+			set { animations = value; }  // set method
+		}
 
 		public void setControlDropdownBox(SelectionBoxConfig ControlDropdownBox)
 		{
@@ -177,6 +194,8 @@ namespace AMG
 				setParameter(paramEyeBallY, ParamEyeBallYValue, paramEyeBallYAlignValue);
 				setParameter(paramBrowAngleL, paramBrowAngleLValue, paramBrowAngleLAlignValue);
 				setParameter(paramBrowAngleR, paramBrowAngleRValue, paramBrowAngleRAlignValue);
+				setParameter(paramBrowLForm, paramBrowLFormValue, paramBrowLFormAlignValue);
+				setParameter(paramBrowRForm, paramBrowRFormValue, paramBrowRFormAlignValue);
 				setParameter(paramMouthOpenY, paramMouthOpenYValue, paramMouthOpenYAlignValue);
 				setParameter(paramMouthForm, paramMouthFormValue, paramMouthFormAlignValue);
 			}
@@ -213,6 +232,8 @@ namespace AMG
 
 			paramEyeBallX = AMGParametersController.getParametersFromJson("paramEyeBallX", jsonParams, model);
 			paramEyeBallY = AMGParametersController.getParametersFromJson("paramEyeBallY", jsonParams, model);
+			paramBrowLForm = AMGParametersController.getParametersFromJson("paramBrowLForm", jsonParams, model);
+			paramBrowRForm = AMGParametersController.getParametersFromJson("paramBrowRForm", jsonParams, model);
 			paramBrowAngleL = AMGParametersController.getParametersFromJson("paramBrowAngleL", jsonParams, model);
 			paramBrowAngleR = AMGParametersController.getParametersFromJson("paramBrowAngleR", jsonParams, model);
 

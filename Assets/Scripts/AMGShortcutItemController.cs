@@ -14,16 +14,26 @@ namespace AMG
         [SerializeField] public Button SetButton;
         private CubismModel Model;
         private string Name;
+        private AMGModelController aMGodelController;
 
-        public void SetModel(CubismModel model)
+        public CubismModel cubismModel 
         {
-            Model = model;
+            get { return Model; }
+            set { Model = value; }
         }
 
-        public void SetAnimationName(string text)
+        public string AnimationClip
         {
-            Name = text;
+            get { return Name; }
+            set { Name = value; }
         }
+
+        public AMGModelController modelController
+        {
+            get { return aMGodelController; }
+            set { aMGodelController = value; }
+        }
+
         public void InitShortcutItem()
         {
             ItemButton.onClick.AddListener(BlendAnimationClips);
@@ -40,8 +50,7 @@ namespace AMG
             Globle.KeyboardHookSetStart = true;
             Globle.HookSetModelName = Model.name;
             Globle.HookSetModelAnimationName = Name;
-            //Globle.
-            //Model.GetComponent<Animation>().Blend(Name);
+            Globle.HookSetController = this;
         }
     }
 }

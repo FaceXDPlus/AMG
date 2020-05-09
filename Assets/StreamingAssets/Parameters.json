@@ -42,13 +42,21 @@
 		"PARAM_EYE_BALL_Y",
 		"ParamEyeBallY"
 	],
+    "paramBrowLForm": [
+		"PARAM_BROW_L_FORM",
+		"ParamBrowLForm"
+	],
+	"paramBrowRForm": [
+		"PARAM_BROW_R_FORM",
+		"ParamBrowRForm"
+	],
 	"paramBrowAngleL": [
 		"PARAM_BROW_L_ANGLE",
-		"ParamBrowLForm"
+		"ParamBrowLAngle"
 	],
 	"paramBrowAngleR": [
 		"PARAM_BROW_R_ANGLE",
-		"ParamBrowRForm"
+		"ParamBrowRAngle"
 	],
 	"paramBrowLY": [
 		"PARAM_BROW_L_Y",

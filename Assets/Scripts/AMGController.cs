@@ -213,6 +213,7 @@ namespace AMG
                     Globle.ModelNum++;
                     var modelController = model.gameObject.AddComponent<AMGModelController>();
                     modelController.DisplayName = model.name;
+                    modelController.Animation = animation;
                     modelController.animationClips = animationClips;
                     return model;
                 }
@@ -256,6 +257,8 @@ namespace AMG
             //model.GetComponent<AMGModelController>().ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
             //model.GetComponent<AMGModelController>().ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
             //model.GetComponent<AMGModelController>().ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowLFormValue = float.Parse(jsonResult["eyeBrowLForm"].ToString());
+            model.GetComponent<AMGModelController>().paramBrowRFormValue = float.Parse(jsonResult["eyeBrowRForm"].ToString());
             model.GetComponent<AMGModelController>().paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
             model.GetComponent<AMGModelController>().paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
             model.GetComponent<AMGModelController>().paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
