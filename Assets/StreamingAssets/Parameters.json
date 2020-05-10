@@ -22,17 +22,14 @@
 	"paramBodyAngleX": [
 		"PARAM_BODY_ANGLE_X",
 		"ParamBodyAngleX",
-		"ParamAngleX"
 	],
 	"paramBodyAngleY": [
 		"PARAM_BODY_ANGLE_Y",
 		"ParamBodyAngleY",
-		"ParamAngleY"
 	],
 	"paramBodyAngleZ": [
 		"PARAM_BODY_ANGLE_Z",
 		"ParamBodyAngleZ",
-		"ParamAngleZ"
 	],
 	"paramEyeBallX": [
 		"PARAM_EYE_BALL_X",

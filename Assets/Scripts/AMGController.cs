@@ -132,6 +132,7 @@ namespace AMG
         {
             try
             {
+                string streamingAssetsPaths = Application.streamingAssetsPath + "/models/" + ModelDropdownBox.selectedText.text + "/";
                 string streamingAssetsPath = Application.streamingAssetsPath + "/models/" + ModelDropdownBox.selectedText.text + "/" + ModelDropdownBox.selectedText.text + ".model3.json";
                 Debug.Log(streamingAssetsPath);
                 if (System.IO.File.Exists(streamingAssetsPath))
@@ -213,6 +214,7 @@ namespace AMG
                     Globle.ModelNum++;
                     var modelController = model.gameObject.AddComponent<AMGModelController>();
                     modelController.DisplayName = model.name;
+                    modelController.ModelPath = streamingAssetsPaths;
                     modelController.Animation = animation;
                     modelController.animationClips = animationClips;
                     return model;

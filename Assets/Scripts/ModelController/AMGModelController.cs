@@ -109,7 +109,7 @@ namespace AMG
 		private Vector3 offset;
 		private SelectionBoxConfig ControlDropdownBox;
 		public string DisplayName;
-		public string ModelName;
+		public string ModelPath;
 		public ArrayList animationClips;
 
 		private Animation animations;
@@ -286,10 +286,45 @@ namespace AMG
 			return returnStr;
 		}
 
-		public ArrayList getModelSettings()
+		public Dictionary<string, string> GetModelSettings()
 		{
-			//var returnArray = new Array();
-			return null;
+			var returnArray = new Dictionary<string, string>();
+			returnArray.Add("paramChangeEyeLR"     , changeEyeBallLR.ToString());
+			returnArray.Add("paramAngleXAlignValue", paramAngleXAlignValue.ToString());
+			returnArray.Add("paramAngleYAlignValue", paramAngleYAlignValue.ToString());
+			returnArray.Add("paramAngleZAlignValue", paramAngleZAlignValue.ToString());
+			returnArray.Add("paramEyeBallXAlignValue", paramEyeBallXAlignValue.ToString());
+			returnArray.Add("paramEyeBallYAlignValue", paramEyeBallYAlignValue.ToString());
+			returnArray.Add("transformXValue", transform.position.x.ToString());
+			returnArray.Add("transformYValue", transform.position.y.ToString());
+			returnArray.Add("transformSValue", transform.localScale.x.ToString());
+			returnArray.Add("transformRValue", transform.localEulerAngles.z.ToString());
+
+			return returnArray;
+		}
+
+		public void SetModelSettings(Dictionary<string, string> userInfo)
+		{
+			try
+			{
+				if (userInfo["paramChangeEyeLR"] == "true")
+				{
+					changeEyeBallLR = true;
+				}
+				paramAngleXAlignValue = Convert.ToSingle(userInfo["paramAngleXAlignValue"]);
+				paramAngleYAlignValue = Convert.ToSingle(userInfo["paramAngleYAlignValue"]);
+				paramAngleZAlignValue = Convert.ToSingle(userInfo["paramAngleZAlignValue"]);
+				paramEyeBallXAlignValue = Convert.ToSingle(userInfo["paramEyeBallXAlignValue"]);
+				paramEyeBallYAlignValue = Convert.ToSingle(userInfo["paramEyeBallYAlignValue"]);
+				transform.position = new Vector3(Convert.ToSingle(userInfo["transformXValue"]), Convert.ToSingle(userInfo["transformYValue"]));
+				transform.localScale = new Vector3(Convert.ToSingle(userInfo["transformSValue"]), Convert.ToSingle(userInfo["transformSValue"]));
+				transform.localEulerAngles = new Vector3(0, 0, Convert.ToSingle(userInfo["transformRValue"]));
+			}
+			catch (Exception err)
+			{
+				Globle.AddDataLog("[Model]设置模型时发生错误：" + err.Message);
+			}
+
 		}
 
 	}

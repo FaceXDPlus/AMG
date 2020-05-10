@@ -6,14 +6,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using static AMG.AMGUtils;
 
 namespace AMG
 {
+
     public class AMGMain : MonoBehaviour
     {
         [SerializeField] private Camera mainCamera;
@@ -57,13 +60,16 @@ namespace AMG
         private ArrayList ModelList;
         private AMGController AMGController;
         private AMGShortcutController AMGShortcutController;
-        private AMGSocketManager mySocketServer;
-        private AMGSocketManager myP2PClient;
+        private AMGSocketManager AMGSocketServer;
+        private AMGSocketManager AMGP2PClient;
         private AMGInterceptKeys AMGInterceptKeysController;
+        private AMGSaveController AAMGSaveController;
+        private AMGKeyboardPairController AAMGKeyboardPairController;
 
         public AMGDXInterface dxInterface;
 
         private bool ipState = false;
+
         private void Awake()
         {
             Application.targetFrameRate = FrameRate;
@@ -103,10 +109,13 @@ namespace AMG
             InitKeyboardKeys();
             AMGInterceptKeysController.StartHook();
 
-            mySocketServer = new AMGSocketManager();
-            mySocketServer.setSocketSwitch(SocketSwitch);
-            myP2PClient = new AMGSocketManager();
-            myP2PClient.setP2PClientSwitch(P2PClientSwitch);
+            AMGSocketServer = new AMGSocketManager();
+            AMGSocketServer.setSocketSwitch(SocketSwitch);
+            AMGP2PClient = new AMGSocketManager();
+            AMGP2PClient.setP2PClientSwitch(P2PClientSwitch);
+
+            AAMGSaveController = new AMGSaveController();
+            AAMGKeyboardPairController = new AMGKeyboardPairController();
         }
 
         public void InitKeyboardControls()
@@ -183,11 +192,11 @@ namespace AMG
         {
             if (SocketSwitch.isOn == true)
             {
-                mySocketServer.SocketStart();
+                AMGSocketServer.SocketStart();
             }
             else
             {
-                mySocketServer.SocketStop();
+                AMGSocketServer.SocketStop();
                 Globle.IPMessage = new Dictionary<string, string>();
                 Globle.ModelToIP = new Dictionary<string, string>();
                 //Debug.Log("关闭");
@@ -199,12 +208,12 @@ namespace AMG
         {
             if (P2PClientSwitch.isOn == true && P2PField.text != "")
             {
-                myP2PClient.P2PClientStart(P2PField.text);
+                AMGP2PClient.P2PClientStart(P2PField.text);
 
             }
             else
             {
-                if (this.myP2PClient.P2PClientStatus == true)
+                if (this.AMGP2PClient.P2PClientStatus == true)
                 {
                     Globle.AddDataLog("[WSC]客户连接关闭中");
                     foreach (KeyValuePair<string, string> kvp in Globle.RemoteIPMessage)
@@ -215,7 +224,7 @@ namespace AMG
                         }
                     }
                     Globle.globleIPChanged = true;
-                    myP2PClient.P2PClientStop();
+                    AMGP2PClient.P2PClientStop();
                 }
                 //Debug.Log("关闭");
             }
@@ -390,35 +399,14 @@ namespace AMG
 
         private void ModelDeleteButtonPressed()
         {
-            foreach (CubismModel Model in ModelList)
+            foreach (CubismModel model in ModelList)
             {
-                if (ControlModelDropdownBox.selectedText.text == Model.name)
+                if (ControlModelDropdownBox.selectedText.text == model.name)
                 {
-                    ModelList.Remove(Model);
-                    UnityEngine.Object.Destroy(Model.gameObject.GetComponent<AMGModelController>());
-                    UnityEngine.Object.Destroy(Model.gameObject);
-                    var WaitToRemove = new Dictionary<string, Dictionary<string, string>>();
-                    foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
-                    {
-                        foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
-                        {
-                            if (kkvp.Value.Model == Model)
-                            {
-                                UnityEngine.Debug.Log("Isset " + kkvp.Key);
-                                string iid = System.Guid.NewGuid().ToString();
-                                var dd = new Dictionary<string, string>();
-                                dd.Add(kvp.Key, kkvp.Key);
-                                WaitToRemove.Add(iid, dd);
-                            }
-                        }
-                    }
-                    foreach (KeyValuePair<string, Dictionary<string, string>> kvp in WaitToRemove)
-                    {
-                        foreach (KeyValuePair<string, string> kkvp in kvp.Value)
-                        {
-                            Globle.KeyboardHotkeyDict[kkvp.Key].Remove(kkvp.Value);
-                        }
-                    }
+                    ModelList.Remove(model);
+                    UnityEngine.Object.Destroy(model.gameObject.GetComponent<AMGModelController>());
+                    UnityEngine.Object.Destroy(model.gameObject);
+                    AAMGKeyboardPairController.RemoveKeyboardPair(model);
                     AMGShortcutController.refreshVerticalLayoutGroup();
                     AMGController.RefreshControlDropdown(ModelList);
                     return;
@@ -454,10 +442,93 @@ namespace AMG
 
         public void OnSaveButtonClick()
         {
-            foreach (CubismModel model in ModelList)
+            var model = AMGController.GetModelFromDropdown(ModelList);
+            if (model != null)
             {
-                model.GetComponent<AMGModelController>();
+                var controller = model.GetComponent<AMGModelController>();
+                var data = controller.GetModelSettings();
+                var waitToAdd = new Dictionary<string, Dictionary<string, string>>();
+                //uuid, <快捷键，动画>
+                foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
+                {
+                    foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                    {
+                        if (kkvp.Value.Model == model)
+                        {
+                            UnityEngine.Debug.Log("Processing " + kkvp.Key);
+                            var dd = new Dictionary<string, string>();
+                            dd.Add(kvp.Key, kkvp.Value.AnimationClip);
+                            waitToAdd.Add(kkvp.Key, dd);
+                        }
+                    }
+                }
+                AAMGSaveController.SaveUserData(controller.ModelPath, data, waitToAdd);
             }
+            else
+            {
+                this.Log("\n[Main]未选择控制器");
+            }
+        }
+
+        public void OnLoadButtonClick()
+        {
+            var model = AMGController.GetModelFromDropdown(ModelList);
+            if (model != null)
+            {
+                var controller = model.GetComponent<AMGModelController>();
+                var arrayInfo = AAMGSaveController.LoadUserData(controller.ModelPath);
+                controller.SetModelSettings(arrayInfo.ModelDict);
+                var waitToAdd = arrayInfo.ShortcutPair;
+                AAMGKeyboardPairController.RemoveKeyboardPair(model);
+                foreach (KeyValuePair<string, Dictionary<string, string>> kvp in waitToAdd)
+                {
+                    foreach (KeyValuePair<string, string> kkvp in kvp.Value)
+                    {
+                        var shortcutClass = new ShortcutClass();
+                        shortcutClass.AnimationClip = kkvp.Value;
+                        shortcutClass.Model = model;
+                        shortcutClass.modelController = controller;
+                        shortcutClass.KeyPressed = ProcessKeypair(kkvp.Key);//需要处理
+                        if (Globle.KeyboardHotkeyDict.ContainsKey(kkvp.Key))
+                        {
+                            Globle.KeyboardHotkeyDict[kkvp.Key].Add(kvp.Key, shortcutClass);
+                        }
+                        else
+                        {
+                            var dd = new Dictionary<string, ShortcutClass>();
+                            dd.Add(kvp.Key, shortcutClass);
+                            Globle.KeyboardHotkeyDict.Add(kkvp.Key, dd);
+                        }
+                    }
+                }
+                AMGShortcutController.refreshVerticalLayoutGroup();
+                AMGController.RefreshControlDropdown(ModelList);
+            }
+            else
+            {
+                this.Log("\n[Main]未选择控制器");
+            }
+        }
+        
+        public string ProcessKeypair(string text)
+        {
+            var returnstr = "";
+            var keyboard = text.Split(',');
+            foreach (string skey in keyboard)
+            {
+                var key = int.Parse(skey);
+                if (Globle.KeyTranslation.ContainsKey(key))
+                {
+                    returnstr = returnstr + Globle.KeyTranslation[key] + "+";
+                }
+                else
+                {
+                    returnstr = returnstr + key.ToString() + "+";
+                }
+                //UnityEngine.Debug.Log("ControlKeyboardPressedList:" + key);
+            }
+            returnstr = returnstr.Substring(0, returnstr.Length - 1);
+            return returnstr;
         }
 
         public void Update()
@@ -476,16 +547,9 @@ namespace AMG
             OnSendIPMessageToHost();
         }
 
-        public class ArrayInfo
-        {
-            public string hostName { get; set; }
-            public ArrayList keyboardAttached { get; set; }
-            public Dictionary<string, string> ipMessage { get; set; }
-        }
-
         public void OnSendIPMessageToHost()
         {
-            if (P2PField.text != "" && P2PClientSwitch.isOn == true && myP2PClient.P2PClientStatus == true)
+            if (P2PField.text != "" && P2PClientSwitch.isOn == true && AMGP2PClient.P2PClientStatus == true)
             {
                 try
                 {
@@ -509,7 +573,7 @@ namespace AMG
                         ipMessage = ipmessage1
                     };
                     byte[] byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(arrayInfo));
-                    myP2PClient.P2PClientSendBinary(byteArray);
+                    AMGP2PClient.P2PClientSendBinary(byteArray);
                 }
                 catch (Exception ex)
                 {

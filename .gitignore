@@ -15,6 +15,5 @@ Assets/StreamingAssets/models.meta
 Assets/MaterialUI
 Assets/UnityCam
 Assets/Plugins/x86_64/ExternalWindowPlugin.dll
-Assets/Scripts/AMGDXInterface.cs
-Assets/Scripts/Loom.cs
 Assets/Plugins
+Assets/Scripts/DXController
