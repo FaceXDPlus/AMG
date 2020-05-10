@@ -120,8 +120,6 @@ namespace AMG
 
         public void InitKeyboardControls()
         {
-            Globle.supportedControlKey.Add("18".ToString());//左边Alt
-            Globle.KeyTranslation.Add(18, "Alt(L)");
             Globle.supportedControlKey.Add("160".ToString());//左边Shift
             Globle.KeyTranslation.Add(160, "Shift(L)");
             Globle.supportedControlKey.Add("162".ToString());//左边Ctrl
@@ -233,14 +231,14 @@ namespace AMG
         private void OnControlModelSelected(int id)
         {
             var selected = ControlModelDropdownBox.listItems[id];
-            foreach (CubismModel Model in ModelList)
+            foreach (CubismModel model in ModelList)
             {
-                if (Model.name == selected)
+                if (model.name == selected)
                 {
                     CloseAllDropdown();
                     Log("\n[Main]切换到模型 " + selected);
-                    ModelEyeballLRSwitch.isOn = Model.GetComponent<AMGModelController>().changeEyeBallLR;
-                    ModelLevelSlider.value = Model.gameObject.GetComponent<CubismRenderController>().SortingOrder;
+                    ModelEyeballLRSwitch.isOn = model.GetComponent<AMGModelController>().changeEyeBallLR;
+                    ModelLevelSlider.value = model.gameObject.GetComponent<CubismRenderController>().SortingOrder;
                     var ModelToIP = Globle.ModelToIP;
                     if (ModelToIP.ContainsKey(selected))
                     {
@@ -260,29 +258,7 @@ namespace AMG
                     }
 
                     AMGShortcutController.refreshVerticalLayoutGroup();
-                    var valueToAnimation = new Dictionary<string, string>();
-                    foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
-                    {
-                        foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
-                        {
-                            if (kkvp.Value.Model == Model && !valueToAnimation.ContainsKey(kkvp.Value.AnimationClip))
-                            {
-                                Debug.Log("Found " + kkvp.Key);
-                                valueToAnimation.Add(kkvp.Value.AnimationClip, kkvp.Value.KeyPressed);
-                            }
-                        }
-                    }
-                    foreach (string name in Model.GetComponent<AMGModelController>().animationClips)
-                    {
-                        if (valueToAnimation.ContainsKey(name))
-                        {
-                            AMGShortcutController.AddVerticalLayoutGroupItem(name, Model, valueToAnimation[name]);
-                        }
-                        else
-                        {
-                            AMGShortcutController.AddVerticalLayoutGroupItem(name, Model);
-                        }
-                    }
+                    AMGShortcutController.SetVerticalLayoutGroup(model);
                     //animation.Blend(animationClip.name);
                 }
             }
@@ -502,14 +478,15 @@ namespace AMG
                     }
                 }
                 AMGShortcutController.refreshVerticalLayoutGroup();
-                AMGController.RefreshControlDropdown(ModelList);
+                AMGShortcutController.SetVerticalLayoutGroup(model);
+                //AMGController.RefreshControlDropdown(ModelList);
             }
             else
             {
                 this.Log("\n[Main]未选择控制器");
             }
         }
-        
+
         public string ProcessKeypair(string text)
         {
             var returnstr = "";

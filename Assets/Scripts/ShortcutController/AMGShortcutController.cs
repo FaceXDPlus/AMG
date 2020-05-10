@@ -31,6 +31,33 @@ namespace AMG
             }
         }
 
+        public void SetVerticalLayoutGroup(CubismModel model)
+        {
+            var valueToAnimation = new Dictionary<string, string>();
+            foreach (KeyValuePair<string, Dictionary<string, ShortcutClass>> kvp in Globle.KeyboardHotkeyDict)
+            {
+                foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                {
+                    if (kkvp.Value.Model == model && !valueToAnimation.ContainsKey(kkvp.Value.AnimationClip))
+                    {
+                        Debug.Log("Found " + kkvp.Key);
+                        valueToAnimation.Add(kkvp.Value.AnimationClip, kkvp.Value.KeyPressed);
+                    }
+                }
+            }
+            foreach (string name in model.GetComponent<AMGModelController>().animationClips)
+            {
+                if (valueToAnimation.ContainsKey(name))
+                {
+                    this.AddVerticalLayoutGroupItem(name, model, valueToAnimation[name]);
+                }
+                else
+                {
+                    this.AddVerticalLayoutGroupItem(name, model);
+                }
+            }
+        }
+
         public void AddVerticalLayoutGroupItem(string name, CubismModel model, string key = "")
         {
             Button citem = Instantiate<Button>(ShortcutItem);

@@ -8,7 +8,7 @@ namespace AMG
     {
         public static string APPName = "AMG";
         public static string APPVersion = "Alpha 0.8";
-        public static string APPBuild = "3";
+        public static string APPBuild = "4";
         public static string APPHostName = Environment.GetEnvironmentVariable("computername");
         public static int ModelNum = 1;
         public static int IPNum = 0;

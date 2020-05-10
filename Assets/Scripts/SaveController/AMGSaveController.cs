@@ -16,12 +16,19 @@ namespace AMG
             try
             {
                 var savePath = path + "AMGSettings.json";
-
-                StreamReader sr = new StreamReader(savePath, Encoding.Default);
-                String line = sr.ReadToEnd();
-                SaveArrayInfo arrayInfo = JsonConvert.DeserializeObject<SaveArrayInfo>(line);
-                Globle.AddDataLog("[Main]文件读取成功");
-                return arrayInfo;
+                if (System.IO.File.Exists(savePath))
+                {
+                    StreamReader sr = new StreamReader(savePath, Encoding.Default);
+                    String line = sr.ReadToEnd();
+                    SaveArrayInfo arrayInfo = JsonConvert.DeserializeObject<SaveArrayInfo>(line);
+                    Globle.AddDataLog("[Main]文件读取成功");
+                    return arrayInfo;
+                }
+                else
+                {
+                    Globle.AddDataLog("[Main]模型设置文件不存在");
+                    return null;
+                }
             }
             catch (Exception err)
             {
