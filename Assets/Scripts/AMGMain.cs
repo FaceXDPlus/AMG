@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
@@ -20,7 +21,6 @@ namespace AMG
     public class AMGMain : MonoBehaviour
     {
         [SerializeField] private Camera mainCamera;
-        [SerializeField] private Camera modelCamera;
 
         [SerializeField] private InputField ResolutionRatioX;
         [SerializeField] private InputField ResolutionRatioY;
@@ -32,13 +32,11 @@ namespace AMG
         [SerializeField] private Toggle P2PClientSwitch;
 
         [SerializeField] private Toggle SocketSwitch;
-        [SerializeField] private Toggle UnityCamSwitch;
         [SerializeField] private Toggle DXWindowsSwitch;
         [SerializeField] private Toggle ShortcutSwitch;
         [SerializeField] private SelectionBoxConfig ModelDropdownBox;
         [SerializeField] private SelectionBoxConfig ControlModelDropdownBox;
         [SerializeField] private SelectionBoxConfig ControlIPDropdownBox;
-        [SerializeField] private SelectionBoxConfig ModelPoseBox;
 
         [SerializeField] private DialogBoxConfig DialogBox;
         [SerializeField] private Text DialogBoxTitle;
@@ -49,12 +47,14 @@ namespace AMG
 
         [SerializeField] private Slider ModelLevelSlider;
         [SerializeField] private Toggle ModelEyeballLRSwitch;
+        [SerializeField] private Toggle ModelLostResetSwitch;
 
         [SerializeField] private Button ShortcutItem;
         [SerializeField] private VerticalLayoutGroup ShortcutGroup;
         [SerializeField] private GameObject ShortcutPanel;
 
         [SerializeField] private InputField APPHostNameField;
+        [SerializeField] private GameObject ModelObject;
 
         private int FrameRate = 60;
         private ArrayList ModelList;
@@ -107,7 +107,9 @@ namespace AMG
             AMGInterceptKeysController = new AMGInterceptKeys();
             InitKeyboardControls();
             InitKeyboardKeys();
-            AMGInterceptKeysController.StartHook();
+#if UNITY_STANDALONE_WIN
+                AMGInterceptKeysController.StartHook();
+#endif
 
             AMGSocketServer = new AMGSocketManager();
             AMGSocketServer.setSocketSwitch(SocketSwitch);
@@ -116,6 +118,18 @@ namespace AMG
 
             AAMGSaveController = new AMGSaveController();
             AAMGKeyboardPairController = new AMGKeyboardPairController();
+
+            Globle.AddDataLog("[Main]启动完成");
+            var ipaddresses = Dns.GetHostAddresses(Dns.GetHostName());
+            int i = 1;
+            foreach (IPAddress ipaddress in ipaddresses)
+            {
+                if (ipaddress.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    Globle.AddDataLog("[Main]发现第 " + i + " 个IP：" + ipaddress.ToString());
+                    i++;
+                }
+            }
         }
 
         public void InitKeyboardControls()
@@ -167,11 +181,6 @@ namespace AMG
             {
                 box.ContractList();
             }
-        }
-
-        public void onUnityCamSwitchSwitched()
-        {
-            modelCamera.enabled = UnityCamSwitch.isOn;
         }
 
         public void onShortcutSwitchSwitched()
@@ -238,6 +247,7 @@ namespace AMG
                     CloseAllDropdown();
                     Log("\n[Main]切换到模型 " + selected);
                     ModelEyeballLRSwitch.isOn = model.GetComponent<AMGModelController>().changeEyeBallLR;
+                    ModelLostResetSwitch.isOn = model.GetComponent<AMGModelController>().lostReset;
                     ModelLevelSlider.value = model.gameObject.GetComponent<CubismRenderController>().SortingOrder;
                     var ModelToIP = Globle.ModelToIP;
                     if (ModelToIP.ContainsKey(selected))
@@ -326,6 +336,19 @@ namespace AMG
             }
         }
 
+        public void onModelLostResetSwitched()
+        {
+            var model = AMGController.GetModelFromDropdown(ModelList);
+            if (model != null)
+            {
+                model.gameObject.GetComponent<AMGModelController>().lostReset = ModelLostResetSwitch.isOn;
+            }
+            else
+            {
+                this.Log("\n[Main]未选择控制器");
+            }
+        }
+
         public void onModelLevelSliderChanged()
         {
             var model = AMGController.GetModelFromDropdown(ModelList);
@@ -363,13 +386,22 @@ namespace AMG
             var model = AMGController.AddModelFromDropdown();
             if (model != null)
             {
+                model.transform.SetParent(ModelObject.transform);
                 model.GetComponent<AMGModelController>().setControlDropdownBox(ControlModelDropdownBox);
                 model.GetComponent<AMGModelController>().DisplayName = model.name;
+                model.transform.position = new Vector3(model.transform.position.x, model.transform.position.y, 91);
                 ModelList.Add(model);
                 AMGController.RefreshControlDropdown(ModelList);
                 AMGController.RefreshControlIPDropdown();
                 AMGShortcutController.refreshVerticalLayoutGroup();
                 ResetModelControllers();
+                for (int i = 0; i < ControlModelDropdownBox.listItems.Length; i++)
+                {
+                    if (ControlModelDropdownBox.listItems[i] == model.name)
+                    {
+                        ControlModelDropdownBox.Select(i);
+                    }
+                }
             }
         }
 
@@ -398,6 +430,7 @@ namespace AMG
         public void ResetModelControllers()
         {
             ModelEyeballLRSwitch.isOn = false;
+            ModelLostResetSwitch.isOn = false;
             ModelLevelSlider.value = 0;
         }
 
@@ -453,6 +486,7 @@ namespace AMG
             {
                 var controller = model.GetComponent<AMGModelController>();
                 var arrayInfo = AAMGSaveController.LoadUserData(controller.ModelPath);
+                //Todo：导入后修正主页面开关
                 controller.SetModelSettings(arrayInfo.ModelDict);
                 var waitToAdd = arrayInfo.ShortcutPair;
                 AAMGKeyboardPairController.RemoveKeyboardPair(model);
@@ -644,12 +678,17 @@ namespace AMG
 
         public void OnApplicationQuit()
         {
+#if UNITY_STANDALONE_WIN
             AMGInterceptKeysController.StopHook();
+#endif
         }
 
         private void OnDestroy()
         {
+
+#if UNITY_STANDALONE_WIN
             AMGInterceptKeysController.StopHook();
+#endif
         }
     }
 }

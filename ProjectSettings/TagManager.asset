@@ -37,10 +37,16 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - Gift
+  - GiftDefault
   - None
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 2209110643
+    locked: 0
+  - name: Model
+    uniqueID: 2857703791
     locked: 0

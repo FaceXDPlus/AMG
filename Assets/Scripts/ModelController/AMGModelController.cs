@@ -1,6 +1,8 @@
 ﻿using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework.Physics;
 using MaterialUI;
+using NetworkSocket.Http;
+using NetworkSocket.Validation;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -11,6 +13,7 @@ namespace AMG
 {
 	public class AMGModelController : MonoBehaviour
     {
+
 		[Range(0, 1)]
 		public float paramEyeLOpenValue = 0;
 
@@ -66,7 +69,12 @@ namespace AMG
 		public float ParamBodyAngleZValue;
 
 		public bool changeEyeBallLR = false;
-		public bool enableBreath = true;
+		public bool lostReset = false;
+		public bool lostResetFlag = false;
+		public float paramAngleZLastValueFlag;
+		public int  lostValue = 0;
+		public float paramAngleZLastValue;
+		public bool enableBreath = true; 
 
 		public float paramEyeLOpenAlignValue = 0;
 		public float paramEyeROpenAlignValue = 0;
@@ -107,6 +115,7 @@ namespace AMG
 
 		private Vector3 screenPos;
 		private Vector3 offset;
+		private Vector3 goffset;
 		private SelectionBoxConfig ControlDropdownBox;
 		public string DisplayName;
 		public string ModelPath;
@@ -129,6 +138,7 @@ namespace AMG
 			screenPos = Camera.main.WorldToScreenPoint(transform.position);//获取物体的屏幕坐标     
 			offset = screenPos - Input.mousePosition;//获取物体与鼠标在屏幕上的偏移量    
 		}
+
 		void OnMouseDrag()
 		{
 			this.GetComponent<CubismModel>().gameObject.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition + offset);//将拖拽后的物体屏幕坐标还原为世界坐标
@@ -164,7 +174,7 @@ namespace AMG
 						{
 							transform.Rotate(0, 0, +0.5f, Space.Self);
 						}
-						var Scale = Input.GetAxis("Mouse ScrollWheel") * 2f;
+						var Scale = Input.GetAxis("Mouse ScrollWheel") * 12f;
 						this.GetComponent<CubismModel>().gameObject.transform.localScale += new Vector3(Scale, Scale);
 					}
 				}
@@ -202,6 +212,75 @@ namespace AMG
 			catch (Exception err)
 			{
 				Globle.DataLog = Globle.DataLog + "模型发生错误 " + err.Message + " : " + err.StackTrace;
+			}
+		}
+
+		public void FixedUpdate()
+		{
+			if (lostReset) {
+				if (lostValue > 50)
+				{
+					if (paramAngleZValue != 0)
+					{
+						paramAngleZLastValueFlag = paramAngleZValue;
+						paramEyeLOpenValue = 1;
+						paramEyeLOpen.Value = 1;
+
+						paramEyeROpenValue = 1;
+						paramEyeROpen.Value = 1;
+
+						paramAngleXValue = 0;
+						paramAngleX.Value = 0;
+
+						paramAngleYValue = 0;
+						paramAngleY.Value = 0;
+
+						paramAngleZValue = 0;
+						paramAngleZ.Value = 0;
+
+						paramBrowLYValue = 0;
+						paramBrowLY.Value = 0;
+
+						paramBrowRYValue = 0;
+						paramBrowRY.Value = 0;
+
+						paramBrowAngleLValue = 0;
+						paramBrowAngleL.Value = 0;
+
+						paramBrowAngleRValue = 0;
+						paramBrowAngleR.Value = 0;
+
+						paramBrowLFormValue = 0;
+						paramBrowLForm.Value = 0;
+
+						paramBrowRFormValue = 0;
+						paramBrowRForm.Value = 0;
+
+						paramMouthOpenYValue = 0;
+						paramMouthOpenY.Value = 0;
+
+						paramMouthFormValue = 0;
+						paramMouthForm.Value = 0;
+						Globle.AddDataLog("[Model] " + DisplayName + " 触发丢失归正！");
+						lostValue = 0;
+					}
+					else
+					{
+						lostValue = 0;
+					}
+				}
+				else
+				{
+					if (paramAngleZValue == paramAngleZLastValue && paramAngleZValue != 0)
+					{
+						lostValue++;
+					}
+					else
+					{
+						paramAngleZLastValue = paramAngleZValue;
+						lostValue = 0;
+					}
+				}
 			}
 		}
 
@@ -248,7 +327,9 @@ namespace AMG
 		{
 			if (param != null)
 			{
-				param.Value = value - align;
+				var smooth = Mathf.SmoothStep(param.Value, value - align, 0.5f);
+				//param.Value = value - align;
+				param.Value = smooth;
 			}
 		}
 
@@ -290,6 +371,7 @@ namespace AMG
 		{
 			var returnArray = new Dictionary<string, string>();
 			returnArray.Add("paramChangeEyeLR"     , changeEyeBallLR.ToString());
+			returnArray.Add("paramLostReset"       , lostReset.ToString());
 			returnArray.Add("paramAngleXAlignValue", paramAngleXAlignValue.ToString());
 			returnArray.Add("paramAngleYAlignValue", paramAngleYAlignValue.ToString());
 			returnArray.Add("paramAngleZAlignValue", paramAngleZAlignValue.ToString());
@@ -310,6 +392,11 @@ namespace AMG
 				if (userInfo["paramChangeEyeLR"] == "true")
 				{
 					changeEyeBallLR = true;
+				}
+
+				if (userInfo["paramLostReset"] == "true")
+				{
+					lostReset = true;
 				}
 				paramAngleXAlignValue = Convert.ToSingle(userInfo["paramAngleXAlignValue"]);
 				paramAngleYAlignValue = Convert.ToSingle(userInfo["paramAngleYAlignValue"]);

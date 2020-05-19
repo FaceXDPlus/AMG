@@ -142,7 +142,7 @@ namespace AMG
                     var model3Json = CubismModel3Json.LoadAtPath(ModelFullName, BuiltinLoadAssetAtPath);
                     var motions = model3Json.FileReferences.Motions.Motions;
                     var model = model3Json.ToModel(true);
-                    var Scale = 5f;
+                    var Scale = 40f;
                     model.gameObject.transform.localScale += new Vector3(Scale, Scale);
                     CubismRenderController cubisumRenderController = model.GetComponent<CubismRenderController>();
                     cubisumRenderController.SortingMode = CubismSortingMode.BackToFrontOrder;
@@ -209,7 +209,6 @@ namespace AMG
                         model.GetComponent<CubismPoseController>().Refresh();
                     }
 
-
                     model.name = model.name + "(" + Globle.ModelNum.ToString() + ")";
                     Globle.ModelNum++;
                     var modelController = model.gameObject.AddComponent<AMGModelController>();
@@ -250,31 +249,35 @@ namespace AMG
         public void DoJsonPrase(string input, CubismModel model)
         {
             var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
-            model.GetComponent<AMGModelController>().paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
-            model.GetComponent<AMGModelController>().ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
-            model.GetComponent<AMGModelController>().ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
-            model.GetComponent<AMGModelController>().paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
-            model.GetComponent<AMGModelController>().paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
-            model.GetComponent<AMGModelController>().paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
-            //model.GetComponent<AMGModelController>().ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
-            //model.GetComponent<AMGModelController>().ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
-            //model.GetComponent<AMGModelController>().ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowLFormValue = float.Parse(jsonResult["eyeBrowLForm"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowRFormValue = float.Parse(jsonResult["eyeBrowRForm"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
-            model.GetComponent<AMGModelController>().paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
-            model.GetComponent<AMGModelController>().paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
-            model.GetComponent<AMGModelController>().paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
-            model.GetComponent<AMGModelController>().paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
-            if (jsonResult.Property("paramAngleXAlignValue") != null)
+            if (model.GetComponent<AMGModelController>().paramAngleZLastValueFlag != float.Parse(jsonResult["headRoll"].ToString()))
             {
-                model.GetComponent<AMGModelController>().paramAngleXAlignValue = float.Parse(jsonResult["paramAngleXAlignValue"].ToString());
-                model.GetComponent<AMGModelController>().paramAngleYAlignValue = float.Parse(jsonResult["paramAngleYAlignValue"].ToString());
-                model.GetComponent<AMGModelController>().paramAngleZAlignValue = float.Parse(jsonResult["paramAngleZAlignValue"].ToString());
-                model.GetComponent<AMGModelController>().paramEyeBallXAlignValue = float.Parse(jsonResult["paramEyeBallXAlignValue"].ToString());
-                model.GetComponent<AMGModelController>().paramEyeBallYAlignValue = float.Parse(jsonResult["paramEyeBallYAlignValue"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleZLastValueFlag = 0;
+                model.GetComponent<AMGModelController>().paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
+                model.GetComponent<AMGModelController>().ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
+                model.GetComponent<AMGModelController>().ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
+                model.GetComponent<AMGModelController>().paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
+                //model.GetComponent<AMGModelController>().ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
+                //model.GetComponent<AMGModelController>().ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
+                //model.GetComponent<AMGModelController>().ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowLFormValue = float.Parse(jsonResult["eyeBrowLForm"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowRFormValue = float.Parse(jsonResult["eyeBrowRForm"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
+                model.GetComponent<AMGModelController>().paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
+                model.GetComponent<AMGModelController>().paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
+                model.GetComponent<AMGModelController>().paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
+                model.GetComponent<AMGModelController>().paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
+                if (jsonResult.Property("paramAngleXAlignValue") != null)
+                {
+                    model.GetComponent<AMGModelController>().paramAngleXAlignValue = float.Parse(jsonResult["paramAngleXAlignValue"].ToString());
+                    model.GetComponent<AMGModelController>().paramAngleYAlignValue = float.Parse(jsonResult["paramAngleYAlignValue"].ToString());
+                    model.GetComponent<AMGModelController>().paramAngleZAlignValue = float.Parse(jsonResult["paramAngleZAlignValue"].ToString());
+                    model.GetComponent<AMGModelController>().paramEyeBallXAlignValue = float.Parse(jsonResult["paramEyeBallXAlignValue"].ToString());
+                    model.GetComponent<AMGModelController>().paramEyeBallYAlignValue = float.Parse(jsonResult["paramEyeBallYAlignValue"].ToString());
+                }
             }
         }
 

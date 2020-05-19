@@ -17,3 +17,6 @@ Assets/UnityCam
 Assets/Plugins/x86_64/ExternalWindowPlugin.dll
 Assets/Plugins
 Assets/Scripts/DXController
+Assets/Scripts/BallManage.cs
+Assets/Scripts/PhysicsTest.cs
+Assets/Scenes/MainSettings.lighting

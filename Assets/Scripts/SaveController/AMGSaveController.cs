@@ -20,6 +20,7 @@ namespace AMG
                 {
                     StreamReader sr = new StreamReader(savePath, Encoding.Default);
                     String line = sr.ReadToEnd();
+                    sr.Close();
                     SaveArrayInfo arrayInfo = JsonConvert.DeserializeObject<SaveArrayInfo>(line);
                     Globle.AddDataLog("[Main]文件读取成功");
                     return arrayInfo;
@@ -51,14 +52,14 @@ namespace AMG
                 settings.Formatting = Formatting.Indented;
                 var indentFile = JsonConvert.SerializeObject(arrayInfo, settings);
                 var savePath = path + "AMGSettings.json";
-                Globle.AddDataLog("[Main]文件保存到：" + savePath);
                 if (!File.Exists(savePath))
                 {
-                    System.IO.File.Create(savePath).Dispose(); ;
+                    System.IO.File.Create(savePath).Dispose();
                 }
                 StreamWriter sw = new StreamWriter(savePath);
                 sw.WriteLine(indentFile); 
                 sw.Close();
+                Globle.AddDataLog("[Main]文件保存到：" + savePath);
             }
             catch (Exception err)
             {

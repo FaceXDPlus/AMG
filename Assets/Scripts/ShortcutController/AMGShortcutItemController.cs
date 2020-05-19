@@ -14,7 +14,7 @@ namespace AMG
         [SerializeField] public Button SetButton;
         [SerializeField] public Button ClrButton;
         private CubismModel Model;
-        private string Name;
+        private string Name = "";
         private AMGModelController aMGodelController;
 
         public CubismModel cubismModel 

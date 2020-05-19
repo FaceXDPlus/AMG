@@ -9,7 +9,6 @@ namespace AMG
 {
 	public class AMGParametersController : MonoBehaviour
 	{
-		// Start is called before the first frame update
 		public static JObject getParametersJson(string jsonDataPath)
 		{
 			System.IO.StreamReader file = System.IO.File.OpenText(jsonDataPath);
@@ -18,7 +17,6 @@ namespace AMG
 			return jsonParams;
 		}
 
-		// Start is called before the first frame update
 		public static CubismParameter getParametersFromJson(string name, JObject jsonData, CubismModel live2DCubism3Model)
 		{
 			foreach (var Parameters in jsonData)

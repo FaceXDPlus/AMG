@@ -7,8 +7,8 @@ namespace AMG
     public class Globle
     {
         public static string APPName = "AMG";
-        public static string APPVersion = "Alpha 0.8";
-        public static string APPBuild = "4";
+        public static string APPVersion = "Alpha 0.9";
+        public static string APPBuild = "1";
         public static string APPHostName = Environment.GetEnvironmentVariable("computername");
         public static int ModelNum = 1;
         public static int IPNum = 0;
@@ -17,7 +17,7 @@ namespace AMG
         public static Dictionary<string, string> IPAlign;
         public static Dictionary<string, string> RemoteIPMessage;
         public static bool globleIPChanged = false;
-        public static string DataLog = "\n软件版本：" + APPVersion + "，构建版本：" + APPBuild;
+        public static string DataLog = "\n[Main]软件版本：" + APPVersion + "，构建版本：" + APPBuild;
 
 
         public static bool KeyboardHookStart = true;
