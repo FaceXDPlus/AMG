@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 using static AMG.AMGUtils;
 
 namespace AMG
@@ -55,6 +56,7 @@ namespace AMG
 
         [SerializeField] private InputField APPHostNameField;
         [SerializeField] private GameObject ModelObject;
+        [SerializeField] private GameObject ConnectionLostGif;
 
         private int FrameRate = 60;
         private ArrayList ModelList;
@@ -387,8 +389,14 @@ namespace AMG
             if (model != null)
             {
                 model.transform.SetParent(ModelObject.transform);
+                model.gameObject.transform.localPosition = new Vector3(0, 0, 0);
+                var ConnectionLost = Instantiate(ConnectionLostGif);
+                ConnectionLost.transform.SetParent(model.gameObject.transform);
+                ConnectionLost.transform.localPosition = model.gameObject.transform.localPosition;
+                ConnectionLost.GetComponent<AMGConnectionLostPNGController>().Init();
                 model.GetComponent<AMGModelController>().setControlDropdownBox(ControlModelDropdownBox);
                 model.GetComponent<AMGModelController>().DisplayName = model.name;
+                model.GetComponent<AMGModelController>().ConnectionLost = ConnectionLost;
                 model.transform.position = new Vector3(model.transform.position.x, model.transform.position.y, 91);
                 ModelList.Add(model);
                 AMGController.RefreshControlDropdown(ModelList);
@@ -412,11 +420,14 @@ namespace AMG
                 if (ControlModelDropdownBox.selectedText.text == model.name)
                 {
                     ModelList.Remove(model);
+                    UnityEngine.Object.Destroy(model.gameObject.GetComponent<AMGModelController>().ConnectionLost);
                     UnityEngine.Object.Destroy(model.gameObject.GetComponent<AMGModelController>());
                     UnityEngine.Object.Destroy(model.gameObject);
                     AAMGKeyboardPairController.RemoveKeyboardPair(model);
                     AMGShortcutController.refreshVerticalLayoutGroup();
                     AMGController.RefreshControlDropdown(ModelList);
+                    Resources.UnloadUnusedAssets();
+                    System.GC.Collect();
                     return;
                 }
             }
@@ -486,7 +497,15 @@ namespace AMG
             {
                 var controller = model.GetComponent<AMGModelController>();
                 var arrayInfo = AAMGSaveController.LoadUserData(controller.ModelPath);
-                //Todo：导入后修正主页面开关
+                if (arrayInfo.ModelDict["paramChangeEyeLR"] == "True")
+                {
+                    ModelEyeballLRSwitch.isOn = true;
+                }
+
+                if (arrayInfo.ModelDict["paramLostReset"] == "True")
+                {
+                    ModelLostResetSwitch.isOn = true;
+                }
                 controller.SetModelSettings(arrayInfo.ModelDict);
                 var waitToAdd = arrayInfo.ShortcutPair;
                 AAMGKeyboardPairController.RemoveKeyboardPair(model);

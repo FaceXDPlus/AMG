@@ -20,3 +20,5 @@ Assets/Scripts/DXController
 Assets/Scripts/BallManage.cs
 Assets/Scripts/PhysicsTest.cs
 Assets/Scenes/MainSettings.lighting
+Assets/WSATestCertificate.pfx
+Assets/Scripts/Controller/DXController/AMGDXInterface.cs

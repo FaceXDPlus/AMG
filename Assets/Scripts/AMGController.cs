@@ -251,6 +251,7 @@ namespace AMG
             var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
             if (model.GetComponent<AMGModelController>().paramAngleZLastValueFlag != float.Parse(jsonResult["headRoll"].ToString()))
             {
+                model.GetComponent<AMGModelController>().ConnectionLost.SetActive(false);
                 model.GetComponent<AMGModelController>().paramAngleZLastValueFlag = 0;
                 model.GetComponent<AMGModelController>().paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
                 model.GetComponent<AMGModelController>().ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());

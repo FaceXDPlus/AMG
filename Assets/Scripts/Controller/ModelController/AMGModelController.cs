@@ -1,5 +1,6 @@
 ﻿using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework.Physics;
+using Live2D.Cubism.Rendering;
 using MaterialUI;
 using NetworkSocket.Http;
 using NetworkSocket.Validation;
@@ -121,6 +122,11 @@ namespace AMG
 		public string ModelPath;
 		public ArrayList animationClips;
 
+
+		private Vector3 ConnectionLostScreenPos;
+		private Vector3 ConnectionLostOffset;
+		public GameObject ConnectionLost;
+
 		private Animation animations;
 		public Animation Animation   // property
 		{
@@ -141,7 +147,20 @@ namespace AMG
 
 		void OnMouseDrag()
 		{
-			this.GetComponent<CubismModel>().gameObject.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition + offset);//将拖拽后的物体屏幕坐标还原为世界坐标
+			var cc = Camera.main.ScreenToWorldPoint(Input.mousePosition + offset);
+			transform.position = new Vector3(cc.x, cc.y, transform.position.z);
+		}
+
+		void OnMouseDownConnectionLost()
+		{
+			ConnectionLostScreenPos = Camera.main.WorldToScreenPoint(ConnectionLost.transform.position);//获取物体的屏幕坐标     
+			ConnectionLostOffset = ConnectionLostScreenPos - Input.mousePosition;//获取物体与鼠标在屏幕上的偏移量    
+		}
+
+		void OnMouseDragConnectionLost()
+		{
+			var cc = Camera.main.ScreenToWorldPoint(Input.mousePosition + ConnectionLostOffset);
+			ConnectionLost.transform.position = new Vector3(cc.x, cc.y, ConnectionLost.transform.position.z);
 		}
 
 		public void Start()
@@ -174,8 +193,21 @@ namespace AMG
 						{
 							transform.Rotate(0, 0, +0.5f, Space.Self);
 						}
-						var Scale = Input.GetAxis("Mouse ScrollWheel") * 12f;
+						var Scale = Input.GetAxis("Mouse ScrollWheel") * 60f;
 						this.GetComponent<CubismModel>().gameObject.transform.localScale += new Vector3(Scale, Scale);
+					}
+					if (Input.GetKey(KeyCode.LeftControl))
+					{
+						if (Input.GetMouseButtonDown(0))
+						{
+							OnMouseDownConnectionLost();
+						}
+						if (Input.GetMouseButton(0))
+						{
+							OnMouseDragConnectionLost();
+						}
+						var Scale = Input.GetAxis("Mouse ScrollWheel") * 0.05f;
+						ConnectionLost.gameObject.transform.localScale += new Vector3(Scale, Scale);
 					}
 				}
 				if (changeEyeBallLR)
@@ -223,44 +255,8 @@ namespace AMG
 					if (paramAngleZValue != 0)
 					{
 						paramAngleZLastValueFlag = paramAngleZValue;
-						paramEyeLOpenValue = 1;
-						paramEyeLOpen.Value = 1;
-
-						paramEyeROpenValue = 1;
-						paramEyeROpen.Value = 1;
-
-						paramAngleXValue = 0;
-						paramAngleX.Value = 0;
-
-						paramAngleYValue = 0;
-						paramAngleY.Value = 0;
-
-						paramAngleZValue = 0;
-						paramAngleZ.Value = 0;
-
-						paramBrowLYValue = 0;
-						paramBrowLY.Value = 0;
-
-						paramBrowRYValue = 0;
-						paramBrowRY.Value = 0;
-
-						paramBrowAngleLValue = 0;
-						paramBrowAngleL.Value = 0;
-
-						paramBrowAngleRValue = 0;
-						paramBrowAngleR.Value = 0;
-
-						paramBrowLFormValue = 0;
-						paramBrowLForm.Value = 0;
-
-						paramBrowRFormValue = 0;
-						paramBrowRForm.Value = 0;
-
-						paramMouthOpenYValue = 0;
-						paramMouthOpenY.Value = 0;
-
-						paramMouthFormValue = 0;
-						paramMouthForm.Value = 0;
+						ResetModel();
+						ConnectionLost.SetActive(true);
 						Globle.AddDataLog("[Model] " + DisplayName + " 触发丢失归正！");
 						lostValue = 0;
 					}
@@ -282,6 +278,53 @@ namespace AMG
 					}
 				}
 			}
+		}
+
+		public void ResetModel()
+		{
+			paramEyeLOpenValue = 1;
+			paramEyeLOpen.Value = 1;
+
+			paramEyeROpenValue = 1;
+			paramEyeROpen.Value = 1;
+
+			paramAngleXValue = 0;
+			paramAngleX.Value = 0;
+
+			paramAngleYValue = 0;
+			paramAngleY.Value = 0;
+
+			paramAngleZValue = 0;
+			paramAngleZ.Value = 0;
+
+			paramBrowLYValue = 0;
+			paramBrowLY.Value = 0;
+
+			paramBrowRYValue = 0;
+			paramBrowRY.Value = 0;
+
+			paramBrowAngleLValue = 0;
+			paramBrowAngleL.Value = 0;
+
+			paramBrowAngleRValue = 0;
+			paramBrowAngleR.Value = 0;
+
+			paramBrowLFormValue = 0;
+			paramBrowLForm.Value = 0;
+
+			paramBrowRFormValue = 0;
+			paramBrowRForm.Value = 0;
+
+			paramEyeBallX.Value = 0;
+			ParamEyeBallXValue = 0;
+			paramEyeBallY.Value = 0;
+			ParamEyeBallYValue = 0;
+
+			paramMouthOpenYValue = 0;
+			paramMouthOpenY.Value = 0;
+
+			paramMouthFormValue = 0;
+			paramMouthForm.Value = 0;
 		}
 
 		public void initBreath()
@@ -382,6 +425,10 @@ namespace AMG
 			returnArray.Add("transformSValue", transform.localScale.x.ToString());
 			returnArray.Add("transformRValue", transform.localEulerAngles.z.ToString());
 
+			returnArray.Add("ctransformXValue", ConnectionLost.transform.position.x.ToString());
+			returnArray.Add("ctransformYValue", ConnectionLost.transform.position.y.ToString());
+			returnArray.Add("ctransformSValue", ConnectionLost.transform.localScale.x.ToString());
+
 			return returnArray;
 		}
 
@@ -389,12 +436,12 @@ namespace AMG
 		{
 			try
 			{
-				if (userInfo["paramChangeEyeLR"] == "true")
+				if (userInfo["paramChangeEyeLR"] == "True")
 				{
 					changeEyeBallLR = true;
 				}
 
-				if (userInfo["paramLostReset"] == "true")
+				if (userInfo["paramLostReset"] == "True")
 				{
 					lostReset = true;
 				}
@@ -403,9 +450,11 @@ namespace AMG
 				paramAngleZAlignValue = Convert.ToSingle(userInfo["paramAngleZAlignValue"]);
 				paramEyeBallXAlignValue = Convert.ToSingle(userInfo["paramEyeBallXAlignValue"]);
 				paramEyeBallYAlignValue = Convert.ToSingle(userInfo["paramEyeBallYAlignValue"]);
-				transform.position = new Vector3(Convert.ToSingle(userInfo["transformXValue"]), Convert.ToSingle(userInfo["transformYValue"]));
+				transform.position = new Vector3(Convert.ToSingle(userInfo["transformXValue"]), Convert.ToSingle(userInfo["transformYValue"]), transform.position.z);
 				transform.localScale = new Vector3(Convert.ToSingle(userInfo["transformSValue"]), Convert.ToSingle(userInfo["transformSValue"]));
 				transform.localEulerAngles = new Vector3(0, 0, Convert.ToSingle(userInfo["transformRValue"]));
+				ConnectionLost.transform.position = new Vector3(Convert.ToSingle(userInfo["ctransformXValue"]), Convert.ToSingle(userInfo["ctransformYValue"]),ConnectionLost.transform.position.z);
+				ConnectionLost.transform.localScale = new Vector3(Convert.ToSingle(userInfo["ctransformSValue"]), Convert.ToSingle(userInfo["ctransformSValue"]));
 			}
 			catch (Exception err)
 			{
