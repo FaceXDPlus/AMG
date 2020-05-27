@@ -126,7 +126,7 @@ namespace AMG
             }
             catch (Exception err)
             {
-                Globle.AddDataLog("[Main]添加模型发生错误：" + err.Message);
+                Globle.AddDataLog("Main", "添加模型发生错误：" + err.Message);
             }
             return null;
         }

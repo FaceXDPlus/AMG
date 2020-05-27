@@ -21,11 +21,11 @@ namespace AMG
             {
                 if (ipaddress.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    Globle.AddDataLog("[Main]发现第 " + i + " 个IP：" + ipaddress.ToString());
+                    Globle.AddDataLog("Main", "发现第 " + i + " 个IP：" + ipaddress.ToString());
                     i++;
                 }
             }
-            Globle.AddDataLog("[Main]启动完成");
+            Globle.AddDataLog("Main", "启动完成");
         }
 
         void Update()

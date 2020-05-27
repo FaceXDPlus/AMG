@@ -35,28 +35,28 @@ namespace AMG
                 listener.Use<WebSocketMiddleware>();
                 listener.UsePlug<WebSocketPlug>();
                 listener.Start(8040);
-                Globle.AddDataLog("[XDP]服务器已经启动");
+                Globle.AddDataLog("XDP", "服务器已经启动");
 
             }
             catch (Exception ex)
             {
                 SocketSwitch.isOn = false;
                 //Globle.AddDataLog("[XDP]捕捉服务器发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("[XDP]捕捉服务器发生错误 " + ex.Message);
+                Globle.AddDataLog("XDP", "捕捉服务器发生错误 " + ex.Message);
             }
         }
 
         public void SocketStop()
         {
             listener.Dispose();
-            Globle.AddDataLog("[XDP]服务器已经关闭");
+            Globle.AddDataLog("XDP", "服务器已经关闭");
         }
 
         public async void P2PClientStart(string uritext)
         {
             try
             {
-                Globle.AddDataLog("[WSC]客户连接启动中");
+                Globle.AddDataLog("WSC", "客户连接启动中");
                 var uri = new Uri(uritext);
                 P2Pclient = new AWebSocketClient(uri);
 
@@ -72,19 +72,19 @@ namespace AMG
                 if (P2Pclient.IsConnected)
                 {
                     this.P2PClientStatus = true;
-                    Globle.AddDataLog("[WSC]客户连接已经启动");
+                    Globle.AddDataLog("WSC", "客户连接已经启动");
                 }
                 else
                 {
                     P2PClientSwitch.isOn = false;
-                    Globle.AddDataLog("[WSC]客户连接启动失败");
+                    Globle.AddDataLog("WSC", "客户连接启动失败");
                 }
             }
             catch (Exception ex)
             {
                 P2PClientSwitch.isOn = false;
                 //Globle.AddDataLog("[WSC]客户连接发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("[WSC]客户连接发生错误 " + ex.Message);
+                Globle.AddDataLog("WSC", "客户连接发生错误 " + ex.Message);
             }
         }
 
@@ -101,7 +101,7 @@ namespace AMG
             {
                 P2PClientSwitch.isOn = false;
                 //Globle.AddDataLog("[WSC]发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("[WSC]发生错误 " + ex.Message);
+                Globle.AddDataLog("WSC", "发生错误 " + ex.Message);
             }
         }
 
@@ -113,7 +113,7 @@ namespace AMG
                 P2Pclient.Close();
                 P2Pclient.Dispose();
             }
-            Globle.AddDataLog("[WSC]客户连接已经关闭");
+            Globle.AddDataLog("WSC", "客户连接已经关闭");
             //var RemoteIPMessage = ObjectCopier.Clone(Globle.RemoteIPMessage);
             /*foreach (KeyValuePair<string, string> kvp in RemoteIPMessage)
             {

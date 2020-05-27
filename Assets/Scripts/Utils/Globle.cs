@@ -19,7 +19,7 @@ namespace AMG
         //public static Dictionary<string, string> IPAlign;
         //public static Dictionary<string, string> RemoteIPMessage;
         //public static bool globleIPChanged = false;
-        public static string DataLog = "\n[Main]软件版本：" + APPVersion + "，构建版本：" + APPBuild;
+        public static string DataLog = "\n[Main] 软件版本：" + APPVersion + "，构建版本：" + APPBuild;
 
 
         /*public static bool KeyboardHookStart = true;
@@ -37,9 +37,9 @@ namespace AMG
         public static Dictionary<string, Dictionary<string, ShortcutClass>> KeyboardHotkeyDict = new Dictionary<string, Dictionary<string, ShortcutClass>>();
         //组合键操作 uuid, 控制类*/
 
-        public static void AddDataLog(string data)
+        public static void AddDataLog(string from,string data)
         {
-            DataLog = DataLog + "\n" + data;
+            DataLog = DataLog + "\n[" + from + "] " + data;
         }
 
         public static string GetComputerName()

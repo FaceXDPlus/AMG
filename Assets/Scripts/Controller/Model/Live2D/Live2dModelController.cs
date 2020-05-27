@@ -505,7 +505,7 @@ namespace AMG
 			}
 			catch (Exception err)
 			{
-				Globle.AddDataLog("[Model]设置模型时发生错误：" + err.Message);
+				Globle.AddDataLog("Model", "设置模型时发生错误：" + err.Message);
 			}
 
 		}

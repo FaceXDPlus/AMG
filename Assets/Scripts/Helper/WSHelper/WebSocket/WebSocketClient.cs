@@ -41,8 +41,8 @@ namespace AMG
             }
             catch (Exception ex)
             {
-                var log = "[WSC]客户连接发生错误 " + ex.Message + ":" + ex.StackTrace;
-                Globle.AddDataLog(log);
+                var log = "客户连接发生错误 " + ex.Message + ":" + ex.StackTrace;
+                Globle.AddDataLog("WSC", log);
             }
         }
 
