@@ -11,14 +11,8 @@ Packages/
 packages.config
 Assets/StreamingAssets/models
 Assets/StreamingAssets/models.meta
-*.meta
 Assets/MaterialUI
-Assets/UnityCam
 Assets/Plugins/x86_64/ExternalWindowPlugin.dll
 Assets/Plugins
-Assets/Scripts/DXController
-Assets/Scripts/BallManage.cs
-Assets/Scripts/PhysicsTest.cs
-Assets/Scenes/MainSettings.lighting
-Assets/WSATestCertificate.pfx
-Assets/Scripts/Controller/DXController/AMGDXInterface.cs
+Assets/Scripts/Helper/DXHelper/DXHelper.cs
+Assets/Scripts/Helper/DXHelper/DXHelper.cs.meta
