@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace AMG
 {
     public class Globle
     {
         public static string APPName = "AMG-RM";
-        public static string APPVersion = "Alpha 0.1";
+        public static string APPVersion = "Beta 0.1";
         public static string APPBuild = "1";
 
         public static int ModelNum = 1;
-        //public static string APPHostName = GetComputerName();
-        //public static int ModelNum = 1;
-        //public static int IPNum = 0;
-        //public static Dictionary<string, string> ModelToIP;
-        //public static Dictionary<string, string> IPMessage;
-        //public static Dictionary<string, string> IPAlign;
-        //public static Dictionary<string, string> RemoteIPMessage;
-        //public static bool globleIPChanged = false;
-        public static string DataLog = "\n[Main] 软件版本：" + APPVersion + "，构建版本：" + APPBuild;
+        public static ArrayList ModelList = new ArrayList();
+        public static Dictionary<string, WSClientClass> WSClients = new Dictionary<string, WSClientClass>();
+        public static bool WSClientsChanged = false;
+
+        public static string DataLog = "";
+        public static LangController LangController = null;
 
 
         /*public static bool KeyboardHookStart = true;
@@ -46,6 +44,13 @@ namespace AMG
         {
             return Environment.GetEnvironmentVariable("computername");
         }
+    }
+
+    public class WSClientClass
+    {
+        public string ip = "";
+        public string message = "";
+        public DateTime lastUpdated;
     }
 
 }

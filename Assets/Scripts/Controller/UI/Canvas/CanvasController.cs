@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityExtensions;
+using UnityExtensions.Localization;
 
 namespace AMG
 {
@@ -12,20 +14,26 @@ namespace AMG
     {
         [SerializeField] private Text LogText;
         [SerializeField] private Scrollbar LogScrollbar;
+        [SerializeField] private LangController LangController;
 
         void Start()
         {
+            Globle.LangController = LangController;
+            Globle.AddDataLog("Main", LangController.GetLang("LOG.StartVersion", Globle.APPVersion, Globle.APPBuild));
+
             var ipaddresses = Dns.GetHostAddresses(Dns.GetHostName());
             int i = 1;
+
             foreach (IPAddress ipaddress in ipaddresses)
             {
                 if (ipaddress.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    Globle.AddDataLog("Main", "发现第 " + i + " 个IP：" + ipaddress.ToString());
+                    Globle.AddDataLog("Main", LangController.GetLang("LOG.AvailableIP", i.ToString(), ipaddress.ToString()));
                     i++;
                 }
             }
-            Globle.AddDataLog("Main", "启动完成");
+
+            Globle.AddDataLog("Main", LangController.GetLang("LOG.SystemLoaded"));
         }
 
         void Update()

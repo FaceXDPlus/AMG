@@ -1,0 +1,8 @@
+{
+    "autoBuildPacksBeforeUnityBuilding": true,
+    "autoLoadMetaInEditMode": true,
+    "autoReloadLanguageAfterLoadingMeta": true,
+    "loadExcelsInsteadOfPacks": true,
+    "outputLogs": false,
+    "languageType": "zh-CN"
+}

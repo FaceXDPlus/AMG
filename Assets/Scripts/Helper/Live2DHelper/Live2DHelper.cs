@@ -105,11 +105,12 @@ namespace AMG
                         model.GetComponent<CubismPoseController>().Refresh();
                     }
 
-                    //+1s
+                    //+1
                     model.name = model.name + "(" + Globle.ModelNum.ToString() + ")";
-                    Globle.ModelNum++;
+                    Globle.ModelNum++; 
+                    Globle.ModelList.Add(model);
 
-                    var modelController = model.gameObject.AddComponent<Live2dModelController>();
+                    var modelController = model.gameObject.AddComponent<Live2DModelController>();
                     modelController.DisplayName = model.name;
                     modelController.ModelPath = ModelPath;
                     modelController.Animation = animation;

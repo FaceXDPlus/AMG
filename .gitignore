@@ -12,7 +12,7 @@ packages.config
 Assets/StreamingAssets/models
 Assets/StreamingAssets/models.meta
 Assets/MaterialUI
-Assets/Plugins/x86_64/ExternalWindowPlugin.dll
 Assets/Plugins
 Assets/Scripts/Helper/DXHelper/DXHelper.cs
 Assets/Scripts/Helper/DXHelper/DXHelper.cs.meta
+Localization/~$AMG.xlsx

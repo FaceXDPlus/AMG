@@ -34,22 +34,21 @@ namespace AMG
                 listener = new NetworkSocket.TcpListener();
                 listener.Use<WebSocketMiddleware>();
                 listener.UsePlug<WebSocketPlug>();
-                listener.Start(8040);
-                Globle.AddDataLog("XDP", "服务器已经启动");
+                listener.Start(8041);
+                Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStart"));
 
             }
             catch (Exception ex)
             {
                 SocketSwitch.isOn = false;
-                //Globle.AddDataLog("[XDP]捕捉服务器发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("XDP", "捕捉服务器发生错误 " + ex.Message);
+                Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerException", ex.Message, ex.StackTrace));
             }
         }
 
         public void SocketStop()
         {
             listener.Dispose();
-            Globle.AddDataLog("XDP", "服务器已经关闭");
+            Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStop"));
         }
 
         public async void P2PClientStart(string uritext)

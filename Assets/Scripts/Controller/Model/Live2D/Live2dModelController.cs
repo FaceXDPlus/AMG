@@ -7,11 +7,11 @@ using UnityEngine;
 
 namespace AMG
 {
-    public class Live2dModelController : MonoBehaviour
+    public class Live2DModelController : MonoBehaviour
     {
-        public string ConnectionIP;
-        public string ConnectionMessage;
-		public MainPanelController MainPanelController = null;
+        public string ConnectionIP = "/";
+        public string ConnectionMessage = "";
+		public SettingPanelController SettingPanelController = null;
 		public GameObject ConnectionLost;
 
 		private Vector3 screenPos;
@@ -144,15 +144,25 @@ namespace AMG
 		{
 			try
 			{
-				if (MainPanelController != null)
+				if (SettingPanelController != null)
 				{
-					if (MainPanelController.GetModelSelected() == this.GetComponent<CubismModel>().name)
+					if (SettingPanelController.GetModelSelected() == this.GetComponent<CubismModel>().name)
 					{
 						ProcessPosition();
 					}
 				}
 				//处理存入的数据
-				//DoJsonPrase(ConnectionMessage);
+				if (ConnectionIP != "/")
+				{
+					if (Globle.WSClients.ContainsKey(ConnectionIP))
+					{
+						ConnectionMessage = ObjectCopier.Clone(Globle.WSClients[ConnectionIP].message);
+						if (ConnectionMessage != "")
+						{
+							DoJsonPrase(ConnectionMessage);
+						}
+					}
+				}
 				//更新模型位置
 				ProcessModelParameter();
 				
@@ -317,38 +327,42 @@ namespace AMG
 
 		public void DoJsonPrase(string input)
         {
-            var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
-            if (paramAngleZLastValue != float.Parse(jsonResult["headRoll"].ToString()))
-            {
-				//ConnectionLost.SetActive(false);
-				paramAngleZLastValue = float.Parse(jsonResult["headRoll"].ToString());
-                paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
-                ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
-                ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
-                paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
-                paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
-                paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
-                //ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
-                //ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
-                //ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
-                paramBrowLFormValue = float.Parse(jsonResult["eyeBrowLForm"].ToString());
-                paramBrowRFormValue = float.Parse(jsonResult["eyeBrowRForm"].ToString());
-                paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
-                paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
-                paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
-                paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
-                paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
-                paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
-                paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
-                if (jsonResult.Property("paramAngleXAlignValue") != null)
-                {
-                    paramAngleXAlignValue = float.Parse(jsonResult["paramAngleXAlignValue"].ToString());
-                    paramAngleYAlignValue = float.Parse(jsonResult["paramAngleYAlignValue"].ToString());
-                    paramAngleZAlignValue = float.Parse(jsonResult["paramAngleZAlignValue"].ToString());
-                    paramEyeBallXAlignValue = float.Parse(jsonResult["paramEyeBallXAlignValue"].ToString());
-                    paramEyeBallYAlignValue = float.Parse(jsonResult["paramEyeBallYAlignValue"].ToString());
-                }
-            }
+			try
+			{
+				var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
+				if (paramAngleZLastValue != float.Parse(jsonResult["headRoll"].ToString()))
+				{
+					//ConnectionLost.SetActive(false);
+					paramAngleZLastValue = float.Parse(jsonResult["headRoll"].ToString());
+					paramMouthOpenYValue = float.Parse(jsonResult["mouthOpenY"].ToString());
+					ParamEyeBallXValue = float.Parse(jsonResult["eyeX"].ToString());
+					ParamEyeBallYValue = float.Parse(jsonResult["eyeY"].ToString());
+					paramAngleXValue = float.Parse(jsonResult["headYaw"].ToString());
+					paramAngleYValue = float.Parse(jsonResult["headPitch"].ToString());
+					paramAngleZValue = float.Parse(jsonResult["headRoll"].ToString());
+					//ParamBodyAngleXValue = float.Parse(jsonResult["bodyAngleX"].ToString());
+					//ParamBodyAngleYValue = float.Parse(jsonResult["bodyAngleY"].ToString());
+					//ParamBodyAngleZValue = float.Parse(jsonResult["bodyAngleZ"].ToString());
+					paramBrowLFormValue = float.Parse(jsonResult["eyeBrowLForm"].ToString());
+					paramBrowRFormValue = float.Parse(jsonResult["eyeBrowRForm"].ToString());
+					paramBrowAngleLValue = float.Parse(jsonResult["eyeBrowAngleL"].ToString());
+					paramBrowAngleRValue = float.Parse(jsonResult["eyeBrowAngleR"].ToString());
+					paramMouthFormValue = float.Parse(jsonResult["mouthForm"].ToString());
+					paramBrowRYValue = float.Parse(jsonResult["eyeBrowYR"].ToString());
+					paramBrowLYValue = float.Parse(jsonResult["eyeBrowYL"].ToString());
+					paramEyeROpenValue = float.Parse(jsonResult["eyeROpen"].ToString());
+					paramEyeLOpenValue = float.Parse(jsonResult["eyeLOpen"].ToString());
+					if (jsonResult.Property("paramAngleXAlignValue") != null)
+					{
+						paramAngleXAlignValue = float.Parse(jsonResult["paramAngleXAlignValue"].ToString());
+						paramAngleYAlignValue = float.Parse(jsonResult["paramAngleYAlignValue"].ToString());
+						paramAngleZAlignValue = float.Parse(jsonResult["paramAngleZAlignValue"].ToString());
+						paramEyeBallXAlignValue = float.Parse(jsonResult["paramEyeBallXAlignValue"].ToString());
+						paramEyeBallYAlignValue = float.Parse(jsonResult["paramEyeBallYAlignValue"].ToString());
+					}
+				}
+			}
+			catch { }
         }
 
 		public void getParameters()

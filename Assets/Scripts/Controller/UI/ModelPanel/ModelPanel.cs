@@ -15,7 +15,7 @@ namespace AMG
         [SerializeField] private SelectionBoxConfig ModelLostResetActionDropdown;
         [SerializeField] private Button ModelAlignButton;
 
-        public void SetValueFromModel(Live2dModelController controller)
+        public void SetValueFromModel(Live2DModelController controller)
         {
 
         }

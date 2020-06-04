@@ -3,6 +3,7 @@ using System.Text;
 using NetworkSocket;
 using NetworkSocket.Plugs;
 using NetworkSocket.WebSocket;
+using UnityEngine;
 
 namespace AMG
 {
@@ -12,6 +13,21 @@ namespace AMG
         {
             var text = Encoding.UTF8.GetString(frame.Content);
             var ip = ((System.Net.IPEndPoint)context.Session.RemoteEndPoint).Address.ToString();
+            if (Globle.WSClients.ContainsKey(ip))
+            {
+                Globle.WSClients[ip].message = text;
+                Globle.WSClients[ip].lastUpdated = DateTime.Now.Date;
+            }
+            else
+            {
+                var WSC = new WSClientClass();
+                WSC.ip = ip;
+                WSC.message = text;
+                WSC.lastUpdated = DateTime.Now.Date;
+                Globle.WSClients.Add(ip, WSC);
+                Globle.WSClientsChanged = true;
+            }
+
             /*if (Globle.IPMessage.ContainsKey(ip))
             {
                 Globle.IPMessage[ip] = text;

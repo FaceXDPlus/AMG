@@ -20,29 +20,33 @@ namespace AMG
             try
             {
                 var text = Encoding.UTF8.GetString(frame.Content);
-                //Globle.AddDataLog(text);
                 var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(text);
                 var ipMessage = jsonResult["ipMessage"];
                 foreach (JProperty jp in ipMessage)
                 {
-                    var ip = ("回调") + " : " + jp.Name;
+                    var ip = ("P2P") + " : " + jp.Name;
                     var request = jp.Value.ToString();
-                    //Globle.AddDataLog(ip);
-                    /*if (Globle.RemoteIPMessage.ContainsKey(ip))
+
+                    if (Globle.WSClients.ContainsKey(ip))
                     {
-                        Globle.RemoteIPMessage[ip] = request;
+                        Globle.WSClients[ip].message = text;
+                        Globle.WSClients[ip].lastUpdated = DateTime.Now.Date;
                     }
                     else
                     {
-                        Globle.globleIPChanged = true;
-                        Globle.RemoteIPMessage.Add(ip, request);
-                    }*/
+                        var WSC = new WSClientClass();
+                        WSC.ip = ip;
+                        WSC.message = request;
+                        WSC.lastUpdated = DateTime.Now.Date;
+                        Globle.WSClients.Add(ip, WSC);
+                        Globle.WSClientsChanged = true;
+                    }
+
                 }
             }
             catch (Exception ex)
             {
-                var log = "客户连接发生错误 " + ex.Message + ":" + ex.StackTrace;
-                Globle.AddDataLog("WSC", log);
+                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSClientException", ex.Message, ex.StackTrace));
             }
         }
 
