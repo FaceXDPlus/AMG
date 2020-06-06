@@ -1,14 +1,13 @@
-﻿using Live2D.Cubism.Core;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace AMG
 {
-    public class ModelAdvancedController : MonoBehaviour
+    public class ShortcutPanelController : MonoBehaviour
     {
-        [SerializeField] private GameObject AdvancedObject;
-        [SerializeField] private GameObject AdvancedObjectParent;
+        [SerializeField] private GameObject ShortcutObject;
+        [SerializeField] private GameObject ShortcutObjectParent;
         [SerializeField] private SettingPanelController SettingPanelController;
         private ArrayList Objects = new ArrayList();
 
@@ -19,7 +18,16 @@ namespace AMG
             {
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
-                    var InitedParameters = model.GetComponent<Live2DModelController>().InitedParameters;
+                    var controller = model.GetComponent<Live2DModelController>();
+                    foreach (string name in controller.animationClips)
+                    {
+                        var item = Instantiate(ShortcutObject);
+                        item.transform.SetParent(ShortcutObjectParent.transform, false);
+                        var itemController = item.GetComponent<ShortcutItemController>();
+                        itemController.Action.text = name;
+                        item.SetActive(true);
+                    }
+                    /*var InitedParameters = model.GetComponent<Live2DModelController>().InitedParameters;
                     foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
                     {
                         var advancedObject = Instantiate(AdvancedObject);
@@ -27,11 +35,7 @@ namespace AMG
                         advancedObject.SetActive(true);
                         var controller = advancedObject.GetComponent<ModelAdvancedItemController>();
                         controller.ParameterName.text = kvp.Value.Name;
-                        var increase = 2;
-                        if (kvp.Value.MaxValue > 1)
-                        {
-                            increase = 50;
-                        }
+                        var increase = 5;
                         //最小值
                         controller.MinSlider.minValue = kvp.Value.MinValue - increase;
                         controller.MinSlider.maxValue = kvp.Value.MaxValue + increase;
@@ -46,7 +50,7 @@ namespace AMG
                         controller.NowSlider.maxValue = kvp.Value.MaxValue + increase;
                         controller.parametersClass = kvp.Value;
                         Objects.Add(advancedObject);
-                    }
+                    }*/
                 }
             }
         }

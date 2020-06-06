@@ -9,23 +9,12 @@ namespace AMG
 {
     public class WSHelper : MonoBehaviour
     {
-        private Toggle SocketSwitch;
-        private Toggle P2PClientSwitch;
+        [SerializeField]private Toggle SocketSwitch;
+        [SerializeField] private Toggle P2PClientSwitch;
 
         private NetworkSocket.TcpListener listener;
         private WebSocketClient P2Pclient;
         public bool P2PClientStatus = false;
-
-
-        public void setSocketSwitch(Toggle socketSwitch)
-        {
-            this.SocketSwitch = socketSwitch;
-        }
-
-        public void setP2PClientSwitch(Toggle P2PClientSwitch)
-        {
-            this.P2PClientSwitch = P2PClientSwitch;
-        }
 
         public void SocketStart()
         {
@@ -34,7 +23,7 @@ namespace AMG
                 listener = new NetworkSocket.TcpListener();
                 listener.Use<WebSocketMiddleware>();
                 listener.UsePlug<WebSocketPlug>();
-                listener.Start(8041);
+                listener.Start(8040);
                 Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStart"));
 
             }

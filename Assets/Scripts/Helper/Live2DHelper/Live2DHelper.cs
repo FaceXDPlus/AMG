@@ -112,7 +112,7 @@ namespace AMG
 
                     var modelController = model.gameObject.AddComponent<Live2DModelController>();
                     modelController.DisplayName = model.name;
-                    modelController.ModelPath = ModelPath;
+                    modelController.ModelPath = modelD;
                     modelController.Animation = animation;
                     modelController.animationClips = animationClips;
 
@@ -122,12 +122,12 @@ namespace AMG
                 }
                 else
                 {
-                    throw new Exception("文件不存在");
+                    throw new Exception(Globle.LangController.GetLang("LOG.FileUnisset"));
                 }
             }
             catch (Exception err)
             {
-                Globle.AddDataLog("Main", "添加模型发生错误：" + err.Message);
+                Globle.AddDataLog("Main", Globle.LangController.GetLang("LOG.ModelAddationException", err.Message));
             }
             return null;
         }

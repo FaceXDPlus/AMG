@@ -15,7 +15,11 @@ namespace AMG
         [SerializeField] private CanvasController CanvasController;
         //主面板控制器
         [SerializeField] private MainPanelController MainPanelController;
-        
+
+        //其他面板对象
+        [SerializeField] private ModelPanelController ModelPanelController;
+        [SerializeField] private ModelAdvancedController ModelAdvancedController;
+
         //DX控制器
         [SerializeField] private DXHelper dxInterface;
 
@@ -67,14 +71,7 @@ namespace AMG
             return ModelSelectionDropdownBox.selectedText.text;
         }
 
-        public void OnModelSelectionDropdownBoxSelected(int id)
-        {
-            if (id != 0) {
-                Globle.AddDataLog("Model", LangController.GetLang("LOG.SelectModel", ModelSelectionDropdownBox.selectedText.text));
-            }
-        }
-
-        public void OnModelIPDropdownBoxSelected(int id)
+        public CubismModel GetCubismModelSelected()
         {
             if (ModelSelectionDropdownBox.selectedText.text != "/")
             {
@@ -82,10 +79,29 @@ namespace AMG
                 {
                     if (ModelSelectionDropdownBox.selectedText.text == model.name)
                     {
-                        model.GetComponent<Live2DModelController>().ConnectionIP = ModelIPDropdownBox.selectedText.text;
-                        Globle.AddDataLog("Model", LangController.GetLang("LOG.SetModelIP", ModelSelectionDropdownBox.selectedText.text, ModelIPDropdownBox.selectedText.text));
+                        return model;
                     }
                 }
+            }
+            return null;
+        }
+
+        public void OnModelSelectionDropdownBoxSelected(int id)
+        {
+            if (id != 0) {
+                Globle.AddDataLog("Model", LangController.GetLang("LOG.SelectModel", ModelSelectionDropdownBox.selectedText.text));
+                ModelPanelController.SetValueFromModel();
+            }
+            Invoke("ResetModelAdvancedPanel", 0.1f);
+        }
+
+        public void OnModelIPDropdownBoxSelected(int id)
+        {
+            var model = GetCubismModelSelected();
+            if (model != null)
+            {
+                model.GetComponent<Live2DModelController>().ConnectionIP = ModelIPDropdownBox.selectedText.text;
+                Globle.AddDataLog("Model", LangController.GetLang("LOG.SetModelIP", ModelSelectionDropdownBox.selectedText.text, ModelIPDropdownBox.selectedText.text));
             }
         }
 
@@ -110,13 +126,16 @@ namespace AMG
         public void AddModel()
         {
             var model = Live2DHelper.GetModelFromName(ModelDropdownBox.selectedText.text, ModelParent);
-            model.GetComponent<Live2DModelController>().SettingPanelController = this;
-            var connectionLost = Instantiate(ConnectionLost);
-            connectionLost.transform.SetParent(model.gameObject.transform);
-            connectionLost.transform.localPosition = model.gameObject.transform.localPosition;
-            connectionLost.GetComponent<PNGListHelper>().Init(); 
-            model.GetComponent<Live2DModelController>().ConnectionLost = connectionLost;
-            ResetModelSelectionDropdown();
+            if (model != null)
+            {
+                model.GetComponent<Live2DModelController>().SettingPanelController = this;
+                var connectionLost = Instantiate(ConnectionLost);
+                connectionLost.transform.SetParent(model.gameObject.transform);
+                connectionLost.transform.localPosition = model.gameObject.transform.localPosition;
+                connectionLost.GetComponent<PNGListHelper>().Init();
+                model.GetComponent<Live2DModelController>().ConnectionLost = connectionLost;
+                ResetModelSelectionDropdown();
+            }
         }
 
         public void RefreshModels()
@@ -132,33 +151,30 @@ namespace AMG
                     ModelDropdownBox.listItems[i] = models[i].ToString();
                     i++;
                 }
-                ModelDropdownBox.selectedText.text = "请选择模型";
+                ModelDropdownBox.selectedText.text = "/";
                 ModelDropdownBox.RefreshList();
             }
             else
             {
-                ModelDropdownBox.selectedText.text = "未找到模型";
+                ModelDropdownBox.selectedText.text = "/";
             }
         }
 
         public void RemoveModel()
         {
-            if (ModelSelectionDropdownBox.selectedText.text != "")
+            var model = GetCubismModelSelected();
+            if (model != null)
             {
-                foreach (CubismModel model in Globle.ModelList)
-                {
-                    if (ModelSelectionDropdownBox.selectedText.text == model.name)
-                    {
-                        Globle.ModelList.Remove(model);
-                        UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>().ConnectionLost);
-                        UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>());
-                        UnityEngine.Object.Destroy(model.gameObject);
-                        ResetModelSelectionDropdown();
-                        Resources.UnloadUnusedAssets();
-                        System.GC.Collect();
-                        return;
-                    }
-                }
+                Globle.ModelList.Remove(model);
+                UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>().ConnectionLost);
+                UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>());
+                UnityEngine.Object.Destroy(model.gameObject);
+                ResetModelSelectionDropdown();
+                ModelIPDropdownBox.selectedText.text = "/";
+                Resources.UnloadUnusedAssets();
+                System.GC.Collect();
+                ModelAdvancedController.OnDisable();
+                return;
             }
         }
 
@@ -180,6 +196,11 @@ namespace AMG
             ModelSelectionDropdownBox.Select(i);
         }
 
+        public void ResetModelAdvancedPanel()
+        {
+            ModelAdvancedController.OnDisable();
+            ModelAdvancedController.OnEnable();
+        }
 
         #endregion
 

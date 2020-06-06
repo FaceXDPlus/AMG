@@ -15,7 +15,7 @@ MonoBehaviour:
   _defaultSettings:
     font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     fontStyle: 0
-    fontSize: 14
+    fontSize: 12
     lineSpacing: 1
     alignment: 4
     alignByGeometry: 0

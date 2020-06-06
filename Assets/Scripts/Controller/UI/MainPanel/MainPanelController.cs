@@ -29,7 +29,7 @@ namespace AMG
         [SerializeField] private GameObject ShortcutPanel;
 
         //其他控制器
-        [SerializeField] private ModelPanel ModelPanel;
+        [SerializeField] private ModelPanelController ModelPanelController;
 
         void Start()
         {
@@ -38,7 +38,6 @@ namespace AMG
             ModelAdvancedToggle.onValueChanged.AddListener((bool isOn) => { OnModelAdvancedToggleClick(isOn); });
             WebSocketToggle.onValueChanged.AddListener((bool isOn) => { OnWebSocketToggleClick(isOn); });
             ShortcutToggle.onValueChanged.AddListener((bool isOn) => { OnShortcutToggleClick(isOn); });
-
         }
 
         #region UI
