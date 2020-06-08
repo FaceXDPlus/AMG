@@ -12,7 +12,7 @@ namespace AMG
         [SerializeField] public Slider Duration;
         [SerializeField] public Button SetButton;
         [SerializeField] public Button ClearButton;
-        public ShortcutItemHelper shortcutItemHelper;
+        public ShortcutClass ShortcutClass;
 
         private void Start()
         {

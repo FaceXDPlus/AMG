@@ -32,27 +32,34 @@ namespace AMG
         [SerializeField] private SelectionBoxConfig ModelIPDropdownBox;
         [SerializeField] private GameObject ModelParent;
 
-
+        //P2P连接
+        [SerializeField] private InputField P2PClientField;
+        [SerializeField] private UnityEngine.UI.Toggle P2PClientToggle;
+        [SerializeField] private WSHelper WebSocketHelper;
+        [SerializeField] private Text P2PClientName;
+     
         //丢失模型动画
         [SerializeField] private GameObject ConnectionLost;
 
+        //其他控制器
         [SerializeField] private Live2DHelper Live2DHelper;
         [SerializeField] private LangController LangController;
 
         void Start()
         {
+            P2PClientName.text = Globle.GetComputerName();
             ModelAddButton.onClick.AddListener(() => { OnModelAddButtonClick(); });
             ModelRefreshButton.onClick.AddListener(() => { OnModelRefreshButtonClick(); });
             ModelRemoveButton.onClick.AddListener(() => { OnModelRemoveButtonClick(); });
             ModelSelectionDropdownBox.ItemPicked += OnModelSelectionDropdownBoxSelected;
             ModelIPDropdownBox.ItemPicked += OnModelIPDropdownBoxSelected;
+            P2PClientToggle.onValueChanged.AddListener((bool isOn) => { OnP2PClientToggleClick(isOn); });
             var none = new string[1];
             none[0] = "/";
             ModelSelectionDropdownBox.listItems = none;
             ModelIPDropdownBox.listItems = none;
             RefreshModels();
         }
-
 
         void Update()
         {
@@ -62,7 +69,6 @@ namespace AMG
                 OnRefreshModelIPDropdownBoxDropdown();
             }
         }
-
 
         #region Model
 
@@ -91,8 +97,13 @@ namespace AMG
             if (id != 0) {
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SelectModel", ModelSelectionDropdownBox.selectedText.text));
                 ModelPanelController.SetValueFromModel();
+                ModelIPDropdownBox.selectedText.text = GetCubismModelSelected().GetComponent<Live2DModelController>().ConnectionIP;
             }
-            Invoke("ResetModelAdvancedPanel", 0.1f);
+            else
+            {
+                ModelIPDropdownBox.selectedText.text = "/";
+            }
+            ResetModelAdvancedPanel();
         }
 
         public void OnModelIPDropdownBoxSelected(int id)
@@ -135,6 +146,8 @@ namespace AMG
                 connectionLost.GetComponent<PNGListHelper>().Init();
                 model.GetComponent<Live2DModelController>().ConnectionLost = connectionLost;
                 ResetModelSelectionDropdown();
+                ModelIPDropdownBox.selectedText.text = "/"; 
+                ModelIPDropdownBox.currentSelection = -1;
             }
         }
 
@@ -238,5 +251,21 @@ namespace AMG
         }
 
         #endregion
+    
+        public void OnP2PClientToggleClick(bool isOn)
+        {
+            if (isOn && P2PClientField.text != "")
+            {
+                WebSocketHelper.P2PClientStart(P2PClientField.text);
+
+            }
+            else
+            {
+                if (WebSocketHelper.P2PClientStatus == true)
+                {
+                    WebSocketHelper.P2PClientStop();
+                }
+            }
+        }
     }
 }

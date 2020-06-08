@@ -46,11 +46,13 @@ namespace AMG
         }
     }
 
+    [Serializable]
     public class WSClientClass
     {
         public string ip = "";
         public string message = "";
         public DateTime lastUpdated;
+        public bool isRemote = false;
     }
 
 }

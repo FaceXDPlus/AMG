@@ -24,21 +24,10 @@ namespace AMG
                 WSC.ip = ip;
                 WSC.message = text;
                 WSC.lastUpdated = DateTime.Now.Date;
+                WSC.isRemote = true;
                 Globle.WSClients.Add(ip, WSC);
                 Globle.WSClientsChanged = true;
             }
-
-            /*if (Globle.IPMessage.ContainsKey(ip))
-            {
-                Globle.IPMessage[ip] = text;
-            }
-            else
-            {
-                Globle.IPMessage.Add(ip, text);
-            }*/
-            //var log = string.Format("时间:{0} 用户:{1} 信息:{2}", DateTime.Now.ToString("mm:ss"), context.Session.RemoteEndPoint.ToString(), text);
-            //Debug.Log(log);
-            //Globle.DataLog = Globle.DataLog + log;
         }
     }
 }

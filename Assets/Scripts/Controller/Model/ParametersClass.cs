@@ -12,8 +12,6 @@ namespace AMG
         public string Name = "None";
         //SDK名字
         public string SDKName = "None";
-        //联动名字
-        public string P2PSDKName = "None";
         public object Parameter = null;
         public float NowValue = 0;
         public float MinValue = 0;

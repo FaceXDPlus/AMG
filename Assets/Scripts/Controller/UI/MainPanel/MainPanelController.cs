@@ -21,15 +21,17 @@ namespace AMG
         [SerializeField] private ModelAdvancedController ModelAdvancedController;
 
         //WebSocket部分
-        [SerializeField] private Toggle WebSocketToggle;
+        [SerializeField] public Toggle WebSocketToggle;
         [SerializeField] private WSHelper WebSocketHelper;
 
         //快捷键窗口部分
         [SerializeField] private Toggle ShortcutToggle;
         [SerializeField] private GameObject ShortcutPanel;
 
-        //其他控制器
-        [SerializeField] private ModelPanelController ModelPanelController;
+
+        //USB部分
+        [SerializeField] private Toggle USBToggle;
+
 
         void Start()
         {

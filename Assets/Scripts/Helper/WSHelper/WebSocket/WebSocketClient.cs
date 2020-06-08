@@ -29,7 +29,7 @@ namespace AMG
 
                     if (Globle.WSClients.ContainsKey(ip))
                     {
-                        Globle.WSClients[ip].message = text;
+                        Globle.WSClients[ip].message = request;
                         Globle.WSClients[ip].lastUpdated = DateTime.Now.Date;
                     }
                     else
@@ -38,6 +38,7 @@ namespace AMG
                         WSC.ip = ip;
                         WSC.message = request;
                         WSC.lastUpdated = DateTime.Now.Date;
+                        WSC.isRemote = true;
                         Globle.WSClients.Add(ip, WSC);
                         Globle.WSClientsChanged = true;
                     }
@@ -46,7 +47,7 @@ namespace AMG
             }
             catch (Exception ex)
             {
-                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSClientException", ex.Message, ex.StackTrace));
+                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientException", ex.Message, ex.StackTrace));
             }
         }
 

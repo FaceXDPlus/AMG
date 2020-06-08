@@ -1,12 +1,14 @@
 ﻿using MaterialUI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityExtensions;
 using UnityExtensions.Localization;
+
 
 namespace AMG
 {
@@ -15,6 +17,7 @@ namespace AMG
         [SerializeField] private Text LogText;
         [SerializeField] private Scrollbar LogScrollbar;
         [SerializeField] private LangController LangController;
+        [SerializeField] private MainPanelController MainPanelController;
 
         void Start()
         {
@@ -34,6 +37,8 @@ namespace AMG
             }
 
             Globle.AddDataLog("Main", LangController.GetLang("LOG.SystemLoaded"));
+            //自动启动WebSocket
+            MainPanelController.WebSocketToggle.isOn = true;
         }
 
         void Update()

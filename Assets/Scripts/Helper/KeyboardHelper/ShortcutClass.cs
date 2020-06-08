@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AMG
 {
-    public class ShortcutItemHelper : MonoBehaviour
+    public class ShortcutClass : MonoBehaviour
     {
         public string AnimationClip;
         public string Parameter;

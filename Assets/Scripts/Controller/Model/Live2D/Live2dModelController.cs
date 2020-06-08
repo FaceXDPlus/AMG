@@ -25,11 +25,19 @@ namespace AMG
 		public ArrayList animationClips;
 		public Animation Animation;
 
-		//等XD的SDK更新
 		public bool LostReset = false;
 		public int LostResetAction = 0;
 		//0无 1动作 2PNG队列
-		public string LostResetMotion = "";
+		public string LostResetMotion = "/";
+		//判断
+		public int LostResetValue = 0;
+		public float LostResetLastZ = 0;
+		public bool LostResetFlag = false;
+
+		//版本判断
+		public bool IsNewSDK = false;
+		public bool isTracked = false;
+
 
 		void Start()
         {
@@ -73,26 +81,100 @@ namespace AMG
 
 		public void FixedUpdate()
 		{
+			if (IsNewSDK)
+			{
+				if (isTracked != true && LostResetFlag == false)
+				{
+					LostResetFlag = true;
+					//ResetModel();
+					SetLostReset(true);
+				}else if (isTracked == true && LostResetFlag == true)
+				{
+					LostResetFlag = false;
+					SetLostReset(false);
+				}
+			}
+			else 
+			{
+				var aa = (CubismParameter)InitedParameters["paramAngleZ"].Parameter;
+				if (LostResetValue > 50)
+				{
+					if (LostResetFlag == false && aa.Value != 0)
+					{
+						LostResetFlag = true;
+						ResetModel();
+						SetLostReset(true);
+					}
+					else if (aa.Value != LostResetLastZ && LostResetFlag == true)
+					{
+						LostResetFlag = false;
+						SetLostReset(false);
+						LostResetLastZ = aa.Value;
+						LostResetValue = 0;
+					}
+				}
+				else
+				{
+					if (aa.Value == LostResetLastZ)
+					{
+						LostResetValue++;
+					}
+					else
+					{
+						LostResetLastZ = aa.Value;
+						LostResetValue = 0;
+					}
+				}
+			}
+		}
+
+		public void SetLostReset(bool isOn)
+		{
+			switch (LostResetAction)
+			{
+				case 0:
+					if (isOn == true)
+					{
+						//无操作
+					}
+					else
+					{
+						ConnectionLost.SetActive(false);
+					}
+					break;
+				case 1:
+					if (isOn)
+					{
+						if (animationClips.Contains(LostResetMotion))
+						{
+							this.Animation.Blend(LostResetMotion);
+						}
+					}
+					break;
+				case 2:
+					ConnectionLost.SetActive(isOn);
+					break;
+			}
 		}
 
 		public void InitParameters()
 		{
-			Parameters.Add("paramEyeLOpen", "eyeLOpen|ELO");
-			Parameters.Add("paramEyeROpen", "eyeROpen|ERO");
-			Parameters.Add("paramAngleX", "headYaw|AX");
-			Parameters.Add("paramAngleY", "headPitch|AY");
-			Parameters.Add("paramAngleZ", "headRoll|AZ");
-			Parameters.Add("paramEyeBallX", "eyeX|EBX");
-			Parameters.Add("paramEyeBallY", "eyeY|EBY");
-			Parameters.Add("paramBrowLForm", "eyeBrowLForm|BLF");
-			Parameters.Add("paramBrowRForm", "eyeBrowRForm|BRF");
-			Parameters.Add("paramBrowAngleL", "eyeBrowAngleL|BAL");
-			Parameters.Add("paramBrowAngleR", "eyeBrowAngleR|BAR");
-			Parameters.Add("paramBrowLY", "eyeBrowYL|BLY");
-			Parameters.Add("paramBrowRY", "eyeBrowYR|BRY");
-			Parameters.Add("paramMouthOpenY", "mouthOpenY|MOY");
-			Parameters.Add("paramMouthForm", "mouthForm|MF");
-			Parameters.Add("paramBreath", "Breath|/");
+			Parameters.Add("paramEyeLOpen", "eyeLOpen");
+			Parameters.Add("paramEyeROpen", "eyeROpen");
+			Parameters.Add("paramAngleX", "headYaw");
+			Parameters.Add("paramAngleY", "headPitch");
+			Parameters.Add("paramAngleZ", "headRoll");
+			Parameters.Add("paramEyeBallX", "eyeX");
+			Parameters.Add("paramEyeBallY", "eyeY");
+			Parameters.Add("paramBrowLForm", "eyeBrowLForm");
+			Parameters.Add("paramBrowRForm", "eyeBrowRForm");
+			Parameters.Add("paramBrowAngleL", "eyeBrowAngleL");
+			Parameters.Add("paramBrowAngleR", "eyeBrowAngleR");
+			Parameters.Add("paramBrowLY", "eyeBrowYL");
+			Parameters.Add("paramBrowRY", "eyeBrowYR");
+			Parameters.Add("paramMouthOpenY", "mouthOpenY");
+			Parameters.Add("paramMouthForm", "mouthForm");
+			Parameters.Add("paramBreath", "Breath");
 		}
 
 		public void ProcessPosition()
@@ -135,11 +217,21 @@ namespace AMG
 
 		public void ProcessModelParameter()
 		{
-			foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
+			if (LostResetFlag == false)
 			{
-				if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
+				foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
 				{
-					setParameter((CubismParameter)kvp.Value.Parameter, kvp.Value.NowValue, kvp.Value.MinValue, kvp.Value.MaxValue, kvp.Value.MinSetValue, kvp.Value.MaxSetValue);
+					if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
+					{
+						setParameter((CubismParameter)kvp.Value.Parameter, kvp.Value.NowValue, kvp.Value.MinValue, kvp.Value.MaxValue, kvp.Value.MinSetValue, kvp.Value.MaxSetValue);
+					}
+				}
+			}
+			else
+			{
+				if (LostReset == true)
+				{
+					ResetModel();
 				}
 			}
 		}
@@ -194,27 +286,21 @@ namespace AMG
 			try
 			{
 				var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
-				if (jsonResult.ContainsKey("SDK"))
+				foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
 				{
-					foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
+					if (jsonResult.ContainsKey(kvp.Value.SDKName))
 					{
-						if (jsonResult.ContainsKey(kvp.Value.P2PSDKName))
-						{
-							kvp.Value.NowValue = float.Parse(jsonResult[kvp.Value.P2PSDKName].ToString());
-							kvp.Value.MinSetValue = float.Parse(jsonResult[kvp.Value.P2PSDKName + "Min"].ToString());
-							kvp.Value.MaxSetValue = float.Parse(jsonResult[kvp.Value.P2PSDKName + "Max"].ToString());
-						}
+						kvp.Value.NowValue = float.Parse(jsonResult[kvp.Value.SDKName].ToString());
 					}
+				}
+				if (jsonResult.ContainsKey("isTracked"))
+				{
+					IsNewSDK = true;
+					isTracked = bool.Parse(jsonResult["isTracked"].ToString());
 				}
 				else
 				{
-					foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
-					{
-						if (jsonResult.ContainsKey(kvp.Value.SDKName))
-						{
-							kvp.Value.NowValue = float.Parse(jsonResult[kvp.Value.SDKName].ToString());
-						}
-					}
+					IsNewSDK = false;
 				}
 			}
 			catch { }
@@ -224,10 +310,9 @@ namespace AMG
 		{
 			var jsonDataPath = Application.streamingAssetsPath + "/Parameters.json";
 			JObject jsonParams = Live2DParametersController.getParametersJson(jsonDataPath);
-			var model = this.GetComponent<CubismModel>();
+			var model = GetComponent<CubismModel>();
 			foreach (KeyValuePair<string, string> kvp in Parameters)
 			{
-				var splitA = kvp.Value.Split('|');
 				var paraC = new ParametersClass();
 				paraC.Name = kvp.Key;
 				var para = Live2DParametersController.getParametersFromJson(kvp.Key, jsonParams, model);
@@ -239,8 +324,7 @@ namespace AMG
 					paraC.MaxValue = para.MaximumValue;
 					paraC.MaxSetValue = para.MaximumValue;
 				}
-				paraC.SDKName = splitA[0];
-				paraC.P2PSDKName = splitA[1];
+				paraC.SDKName = kvp.Value;
 				InitedParameters.Add(kvp.Key, paraC);
 			}
 		}

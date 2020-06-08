@@ -1,7 +1,9 @@
 ﻿using NetworkSocket.WebSocket;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +11,9 @@ namespace AMG
 {
     public class WSHelper : MonoBehaviour
     {
-        [SerializeField]private Toggle SocketSwitch;
+        [SerializeField] private Toggle SocketSwitch;
         [SerializeField] private Toggle P2PClientSwitch;
+        [SerializeField] private Toggle USBClientSwitch;
 
         private NetworkSocket.TcpListener listener;
         private WebSocketClient P2Pclient;
@@ -23,7 +26,7 @@ namespace AMG
                 listener = new NetworkSocket.TcpListener();
                 listener.Use<WebSocketMiddleware>();
                 listener.UsePlug<WebSocketPlug>();
-                listener.Start(8040);
+                listener.Start(8041);
                 Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStart"));
 
             }
@@ -40,11 +43,42 @@ namespace AMG
             Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStop"));
         }
 
+        public class ArrayInfo
+        {
+            public string hostName { get; set; }
+            public ArrayList keyboardAttached { get; set; }
+            public Dictionary<string, string> ipMessage { get; set; }
+        }
+
+        private void FixedUpdate()
+        {
+            if (P2PClientStatus == true && P2PClientSwitch.isOn == true)
+            {
+                var WSClients = ObjectCopier.Clone(Globle.WSClients);
+                var ipMessage = new Dictionary<string, string>();
+                foreach (KeyValuePair<string, WSClientClass> kvp in WSClients)
+                {
+                    if (!ipMessage.ContainsKey(kvp.Value.ip) && kvp.Value.isRemote == false)
+                    {
+                        ipMessage.Add(kvp.Value.ip, kvp.Value.message);
+                    }
+                }
+                ArrayInfo arrayInfo = new ArrayInfo
+                {
+                    hostName = Globle.GetComputerName(),
+                    keyboardAttached = new ArrayList(),
+                    ipMessage = ipMessage
+                };
+                byte[] byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(arrayInfo));
+                P2PClientSendBinary(byteArray);
+            }
+        }
+
         public async void P2PClientStart(string uritext)
         {
             try
             {
-                Globle.AddDataLog("WSC", "客户连接启动中");
+                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientStarting"));
                 var uri = new Uri(uritext);
                 P2Pclient = new AWebSocketClient(uri);
 
@@ -52,27 +86,26 @@ namespace AMG
                 if (addresses.Length == 0)
                 {
                     throw new ArgumentException(
-                        "解析IP失败",
+                        Globle.LangController.GetLang("LOG.WSCClientIPFailed"),
                         ""
                     );
                 }
                 await P2Pclient.ConnectAsync(addresses[0], uri.Port);
                 if (P2Pclient.IsConnected)
                 {
-                    this.P2PClientStatus = true;
-                    Globle.AddDataLog("WSC", "客户连接已经启动");
+                    P2PClientStatus = true;
+                    Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientStarted"));
                 }
                 else
                 {
                     P2PClientSwitch.isOn = false;
-                    Globle.AddDataLog("WSC", "客户连接启动失败");
+                    Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientStartedFailed"));
                 }
             }
             catch (Exception ex)
             {
                 P2PClientSwitch.isOn = false;
-                //Globle.AddDataLog("[WSC]客户连接发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("WSC", "客户连接发生错误 " + ex.Message);
+                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientException", ex.Message));
             }
         }
 
@@ -80,7 +113,7 @@ namespace AMG
         {
             try
             {
-                if (P2Pclient.IsConnected)
+                if (P2Pclient.IsConnected && P2PClientStatus == true)
                 {
                     P2Pclient.SendBinary(binary);
                 }
@@ -88,8 +121,8 @@ namespace AMG
             catch (Exception ex)
             {
                 P2PClientSwitch.isOn = false;
-                //Globle.AddDataLog("[WSC]发生错误 " + ex.Message + " : " + ex.StackTrace);
-                Globle.AddDataLog("WSC", "发生错误 " + ex.Message);
+                P2PClientStatus = false;
+                Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientException", ex.Message));
             }
         }
 
@@ -97,20 +130,20 @@ namespace AMG
         {
             if (P2Pclient != null)
             {
-                this.P2PClientStatus = false;
+                P2PClientStatus = false;
                 P2Pclient.Close();
                 P2Pclient.Dispose();
             }
-            Globle.AddDataLog("WSC", "客户连接已经关闭");
-            //var RemoteIPMessage = ObjectCopier.Clone(Globle.RemoteIPMessage);
-            /*foreach (KeyValuePair<string, string> kvp in RemoteIPMessage)
+            Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientStopped"));
+            var RemoteIPMessage = ObjectCopier.Clone(Globle.WSClients);
+            foreach (KeyValuePair<string, WSClientClass> kvp in RemoteIPMessage)
             {
-                if (kvp.Key.IndexOf("回调") > 0)
+                if (kvp.Value.isRemote == true)
                 {
-                    Globle.RemoteIPMessage.Remove(kvp.Key);
+                    Globle.WSClients.Remove(kvp.Key);
                 }
             }
-            Globle.globleIPChanged = true;*/
+            Globle.WSClientsChanged = true;
         }
 
     }

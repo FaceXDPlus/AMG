@@ -38,7 +38,18 @@ namespace AMG
             {
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
-                    ModelLostResetToggle.isOn  = model.GetComponent<Live2DModelController>().LostReset;
+                    var controller = model.GetComponent<Live2DModelController>();
+                    ModelLostResetToggle.isOn  = controller.LostReset;
+                    ModelLostResetChooseDropdown.selectedText.text = ModelLostResetChooseDropdown.listItems[controller.LostResetAction];
+                    ModelLostResetActionDropdown.listItems = new string[controller.animationClips.Count];
+                    var i = 0;
+                    foreach (var name in controller.animationClips)
+                    {
+                        ModelLostResetActionDropdown.listItems[i] = name.ToString();
+                        i++;
+                    }
+                    ModelLostResetActionDropdown.RefreshList();
+                    ModelLostResetActionDropdown.selectedText.text = controller.LostResetMotion;
                     ModelShowLevelSlider.value = model.gameObject.GetComponent<CubismRenderController>().SortingOrder;
                 }
             }
@@ -97,6 +108,7 @@ namespace AMG
                         controller.SetModelSettings(data.ModelAlign);
                         controller.SetModelOtherSettings(data.ModelOtherSettings);
                         controller.SetModelLocationSettings(data.ModelLocationSettings);
+                        SetValueFromModel();
                     }
                 }
             }
