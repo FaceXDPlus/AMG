@@ -3489,7 +3489,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u52A8\u4F5C"
+  m_Text: /
 --- !u!222 &302233712
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4907,6 +4907,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 390472841}
   m_CullTransparentMesh: 0
+--- !u!1 &397300011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 397300012}
+  m_Layer: 0
+  m_Name: "\u5FEB\u6377\u952E\u7EC4"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &397300012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397300011}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 2109958991}
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &406134609
 GameObject:
   m_ObjectHideFlags: 0
@@ -6165,7 +6196,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &536355222
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8262,7 +8293,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &670560406
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11515,7 +11546,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u64CD\u4F5C"
+  m_Text: /
 --- !u!222 &839390884
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15697,6 +15728,7 @@ MonoBehaviour:
   MainPanelController: {fileID: 2081339848}
   ModelPanelController: {fileID: 1661734699}
   ModelAdvancedController: {fileID: 716715398}
+  ShortcutPanelController: {fileID: 814189195}
   dxInterface: {fileID: 723514436}
   ModelAddButton: {fileID: 850363237}
   ModelRefreshButton: {fileID: 390472848}
@@ -24718,6 +24750,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94818709a470f784e88d0769f82fcf7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPressed: []
 --- !u!1 &1742324412
 GameObject:
   m_ObjectHideFlags: 0
@@ -25139,8 +25172,11 @@ MonoBehaviour:
   ClearButton: {fileID: 570946327}
   ItemButton: {fileID: 1783278818}
   ShortcutController: {fileID: 1731563212}
+  ShortcutClassObject: {fileID: 2109958990}
+  ShortcutClassObjectParent: {fileID: 397300011}
   Model: {fileID: 0}
   Name: 
+  UUID: 
   isAnimation: 0
 --- !u!1 &1787725133
 GameObject:
@@ -28621,6 +28657,57 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2109958990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2109958991}
+  - component: {fileID: 2109958992}
+  m_Layer: 0
+  m_Name: "\u5FEB\u6377\u952E\u5B9E\u4F8B"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &2109958991
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109958990}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 397300012}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2109958992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109958990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fa889a0e246c2e42acb2393a9b5aa4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AnimationClip: 
+  Parameter: 
+  UUID: 
+  isPressedText: 
+  MType: 0
+  Type: 0
+  isCPressed: []
+  ShortcutController: {fileID: 0}
 --- !u!1 &2113443911
 GameObject:
   m_ObjectHideFlags: 0

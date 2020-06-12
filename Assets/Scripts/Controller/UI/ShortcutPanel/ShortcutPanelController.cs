@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Live2D.Cubism.Core;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +18,24 @@ namespace AMG
             var model = SettingPanelController.GetCubismModelSelected();
             if (model != null)
             {
+                var aniDict = new Dictionary<string, ShortcutClass>();
+                foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
+                {
+                    foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutController.ShortcutDict[kvp.Key])
+                    {
+                        if (kkvp.Value.Model == model)
+                        {
+                            if (kkvp.Value.Type == 0)
+                            {
+                                aniDict.Add(kkvp.Value.AnimationClip, kkvp.Value);
+                            }
+                            else if (kkvp.Value.Type == 1)
+                            {
+                                aniDict.Add(kkvp.Value.Parameter, kkvp.Value);
+                            }
+                        }
+                    }
+                }
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
                     var controller = model.GetComponent<Live2DModelController>();
@@ -29,7 +48,37 @@ namespace AMG
                         itemController.Model = model;
                         itemController.Name = name;
                         itemController.isAnimation = true;
+                        if (aniDict.ContainsKey(name))
+                        {
+                            var sclass = aniDict[name];
+                            itemController.UUID = sclass.UUID;
+                            itemController.Shortcut.text = sclass.isPressedText;
+                        }
                         item.SetActive(true);
+                        Objects.Add(item);
+                    }
+
+                    foreach (CubismParameter param in model.Parameters)
+                    {
+                        if (!controller.AInitedParameters.Contains(param))
+                        {
+                            var item = Instantiate(ShortcutObject);
+                            item.transform.SetParent(ShortcutObjectParent.transform, false);
+                            var itemController = item.GetComponent<Live2DShortcutItemController>();
+                            itemController.Action.text = param.name;
+                            itemController.Model = model;
+                            itemController.Name = param.name;
+                            itemController.isAnimation = false;
+                            if (aniDict.ContainsKey(param.name))
+                            {
+                                var sclass = aniDict[param.name];
+                                itemController.UUID = sclass.UUID;
+                                itemController.Shortcut.text = sclass.isPressedText;
+                            }
+                            item.SetActive(true);
+                            Objects.Add(item);
+
+                        }
                     }
                 }
             }

@@ -16,9 +16,12 @@ namespace AMG
         [SerializeField] public Button ClearButton;
         [SerializeField] public Button ItemButton;
         [SerializeField] private ShortcutController ShortcutController;
+        [SerializeField] private GameObject ShortcutClassObject;
+        [SerializeField] private GameObject ShortcutClassObjectParent;
 
         public CubismModel Model;
         public string Name;
+        public string UUID = "";
         public bool isAnimation = false;
 
         private void Start()
@@ -48,17 +51,44 @@ namespace AMG
 
         public void OnSetButtonClick()
         {
-            var isPressed = ShortcutController.isPressed;
-            var strings = from object o in isPressed
-                          select o.ToString();
-            var KeyboardPressedString = string.Join(",", strings.ToArray());
-            Debug.Log(KeyboardPressedString);
-            Shortcut.text = KeyboardPressedString;
+            if (UUID != "")
+            {
+                ShortcutController.RemoveShortcutClass(UUID);
+            }
+            if (ShortcutController.isPressed.Count > 0)
+            {
+                var isPressed = ObjectCopier.Clone(ShortcutController.isPressed);
+                var KeyboardPressedString = string.Join("+", isPressed.ToArray());
+                Shortcut.text = KeyboardPressedString;
+                var item = Instantiate(ShortcutClassObject);
+                item.transform.SetParent(ShortcutClassObjectParent.transform, false);
+                var sclass = item.GetComponent<ShortcutClass>();
+                sclass.Model = Model;
+                sclass.isCPressed = isPressed;
+                sclass.isPressedText = KeyboardPressedString;
+                sclass.MType = 0;
+                if (isAnimation)
+                {
+                    sclass.Type = 0;
+                    sclass.AnimationClip = Name;
+                }
+                else
+                {
+                    sclass.Type = 1;
+                    sclass.Parameter = Name;
+                }
+                UUID = ShortcutController.SetShortcutClass(isPressed, sclass);
+                item.SetActive(true);
+            }
         }
 
         public void OnClearButtonClick()
         {
-            Shortcut.text = "";
+            Shortcut.text = "/";
+            if (UUID != "")
+            {
+                ShortcutController.RemoveShortcutClass(UUID);
+            }
         }
 
         public void BlendAnimationClips()

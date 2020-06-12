@@ -89,6 +89,27 @@ namespace AMG
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
                     var controller = model.GetComponent<Live2DModelController>();
+                    //处理快捷键
+
+                    /*foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
+                    {
+                        foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutController.ShortcutDict[kvp.Key])
+                        {
+                            if (kkvp.Value.Model == model)
+                            {
+                                if (kkvp.Value.Type == 0)
+                                {
+                                    //aniDict.Add(kkvp.Value.AnimationClip, kkvp.Value);
+                                }
+                                else if (kkvp.Value.Type == 1)
+                                {
+                                    //aniDict.Add(kkvp.Value.Parameter, kkvp.Value);
+                                }
+                            }
+                        }
+                    }*/
+
+
                     SaveController.SaveUserData(controller.ModelPath, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), null);
                 }
             }

@@ -19,6 +19,7 @@ namespace AMG
         //其他面板对象
         [SerializeField] private ModelPanelController ModelPanelController;
         [SerializeField] private ModelAdvancedController ModelAdvancedController;
+        [SerializeField] private ShortcutPanelController ShortcutPanelController;
 
         //DX控制器
         [SerializeField] private DXHelper dxInterface;
@@ -104,6 +105,7 @@ namespace AMG
                 ModelIPDropdownBox.selectedText.text = "/";
             }
             ResetModelAdvancedPanel();
+            ResetShortcutPanel();
         }
 
         public void OnModelIPDropdownBoxSelected(int id)
@@ -212,7 +214,11 @@ namespace AMG
         public void ResetModelAdvancedPanel()
         {
             ModelAdvancedController.OnDisable();
-            ModelAdvancedController.OnEnable();
+        }
+
+        public void ResetShortcutPanel()
+        {
+            ShortcutPanelController.OnDisable();
         }
 
         #endregion

@@ -20,6 +20,7 @@ namespace AMG
 
 		private Dictionary<string, string> Parameters = new Dictionary<string, string>();
 		public Dictionary<string, ParametersClass> InitedParameters = new Dictionary<string, ParametersClass>();
+		public ArrayList AInitedParameters = new ArrayList();
 
 		public string DisplayName;
 		public string ModelPath;
@@ -319,6 +320,7 @@ namespace AMG
 				paraC.Parameter = para;
 				if (para != null)
 				{
+					AInitedParameters.Add(para);
 					paraC.MinValue = para.MinimumValue;
 					paraC.MinSetValue = para.MinimumValue;
 					paraC.MaxValue = para.MaximumValue;

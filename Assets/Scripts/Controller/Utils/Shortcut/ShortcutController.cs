@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityRawInput;
+using System.Linq;
 
 namespace AMG
 {
@@ -10,8 +11,8 @@ namespace AMG
     {
         private bool hookEnabled = false;
         //public Dictionary<string, ShortcutClass> ShortcutDict = new Dictionary<string, ShortcutClass>();
-        public Dictionary<ArrayList, Dictionary<string, ShortcutClass>> ShortcutDict = new Dictionary<ArrayList, Dictionary<string, ShortcutClass>>();
-        public ArrayList isPressed = new ArrayList();
+        public Dictionary<List<string>, Dictionary<string, ShortcutClass>> ShortcutDict = new Dictionary<List<string>, Dictionary<string, ShortcutClass>>();
+        public List<string> isPressed = new List<string>();
 
         void Start()
         {
@@ -24,34 +25,79 @@ namespace AMG
         }
 
         private void HandleKeyUp(RawKey key) {
-            if (isPressed.Contains(key))
+            if (isPressed.Contains(key.ToString()))
             {
-                isPressed.Remove(key);
+                isPressed.Remove(key.ToString());
                 isPressed.Sort();
             }
         }
 
         private void HandleKeyDown(RawKey key) {
-            if (!isPressed.Contains(key))
+            if (!isPressed.Contains(key.ToString()))
             {
-                isPressed.Add(key);
+                isPressed.Add(key.ToString());
                 isPressed.Sort();
             }
         }
 
-        public void SetShortcutClass(ArrayList keyPressed, ShortcutClass shortClass)
+        public string SetShortcutClass(List<string> keyPressed, ShortcutClass shortClass)
         {
-
+            keyPressed.Sort(); 
+            string id = System.Guid.NewGuid().ToString();
+            shortClass.UUID = id;
+            shortClass.ShortcutController = this;
+            if (ShortcutDict.ContainsKey(keyPressed)){
+                ShortcutDict[keyPressed].Add(id, shortClass);
+            }
+            else
+            {
+                var dict = new Dictionary<string, ShortcutClass>();
+                dict.Add(id, shortClass);
+                ShortcutDict.Add(keyPressed, dict);
+            }
+            return id;
         }
 
-        public void RemoveShortcutClass()
+        public void RemoveShortcutClass(string uuid)
         {
-
+            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
+            {
+                foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                {
+                    if (uuid == kkvp.Key)
+                    {
+                        Destroy(kkvp.Value.gameObject);
+                        ShortcutDict[kvp.Key].Remove(uuid);
+                        break;
+                    }
+                }
+            }
         }
 
-        private void FixedUpdate()
+        public bool GetContains(List<string> isCPressed)
         {
-            
+            foreach (string key in isCPressed)
+            {
+                if (!isPressed.Contains(key))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void LateUpdate()
+        {
+            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
+            {
+                if (GetContains(kvp.Key))
+                {
+                    foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutDict[kvp.Key])
+                    {
+                        kkvp.Value.Play();
+                    }
+                }
+            }
         }
 
         private void OnApplicationQuit()
