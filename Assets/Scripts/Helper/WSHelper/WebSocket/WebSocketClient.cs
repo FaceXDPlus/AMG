@@ -26,10 +26,11 @@ namespace AMG
                 {
                     var ip = ("P2P") + " : " + jp.Name;
                     var request = jp.Value.ToString();
-
+                    var jsonResultMessage = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(jp.Value.ToString());
                     if (Globle.WSClients.ContainsKey(ip))
                     {
                         Globle.WSClients[ip].message = request;
+                        Globle.WSClients[ip].result = jsonResultMessage;
                         Globle.WSClients[ip].lastUpdated = DateTime.Now.Date;
                     }
                     else
@@ -37,6 +38,8 @@ namespace AMG
                         var WSC = new WSClientClass();
                         WSC.ip = ip;
                         WSC.message = request;
+                        WSC.uuid = jsonResultMessage["uuid"].ToString();
+                        WSC.result = jsonResultMessage;
                         WSC.lastUpdated = DateTime.Now.Date;
                         WSC.isRemote = true;
                         Globle.WSClients.Add(ip, WSC);

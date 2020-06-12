@@ -15,7 +15,7 @@ namespace AMG
         public ArrayList GetModelsFromAssets()
         {
             ArrayList returnArray = new ArrayList();
-            string streamingAssetsPath = Application.streamingAssetsPath + "/models";
+            string streamingAssetsPath = Application.streamingAssetsPath + "/live2d";
             DirectoryInfo dir = new DirectoryInfo(streamingAssetsPath);
             foreach (FileInfo file in dir.GetFiles("*.model3.json", SearchOption.AllDirectories))
             {
@@ -29,7 +29,7 @@ namespace AMG
 
             try
             {
-                string ModelPath = Application.streamingAssetsPath + "/models/" + name + ".model3.json";
+                string ModelPath = Application.streamingAssetsPath + "/live2d/" + name + ".model3.json";
                 //Debug.Log(ModelPath);
                 if (System.IO.File.Exists(ModelPath))
                 {

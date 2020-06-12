@@ -39,6 +39,7 @@ namespace AMG
             DXWindowTransparentToggle.onValueChanged.AddListener((bool isOn) => { OnDXWindowTransparentToggleClick(DXWindowTransparentToggle); });
             ModelAdvancedToggle.onValueChanged.AddListener((bool isOn) => { OnModelAdvancedToggleClick(isOn); });
             WebSocketToggle.onValueChanged.AddListener((bool isOn) => { OnWebSocketToggleClick(isOn); });
+            USBToggle.onValueChanged.AddListener((bool isOn) => { OnUSBToggleClick(isOn); });
             ShortcutToggle.onValueChanged.AddListener((bool isOn) => { OnShortcutToggleClick(isOn); });
         }
 
@@ -74,6 +75,19 @@ namespace AMG
                 WebSocketHelper.SocketStop();
             }
         }
+
+        public void OnUSBToggleClick(bool isOn)
+        {
+            if (isOn)
+            {
+                WebSocketHelper.USBClientStart();
+            }
+            else
+            {
+                WebSocketHelper.USBClientStop();
+            }
+        }
+
 
         public void OnShortcutToggleClick(bool isOn)
         {

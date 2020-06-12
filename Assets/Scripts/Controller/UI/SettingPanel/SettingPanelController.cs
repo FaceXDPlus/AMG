@@ -97,7 +97,7 @@ namespace AMG
             if (id != 0) {
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SelectModel", ModelSelectionDropdownBox.selectedText.text));
                 ModelPanelController.SetValueFromModel();
-                ModelIPDropdownBox.selectedText.text = GetCubismModelSelected().GetComponent<Live2DModelController>().ConnectionIP;
+                ModelIPDropdownBox.selectedText.text = GetCubismModelSelected().GetComponent<Live2DModelController>().ConnectionUUID;
             }
             else
             {
@@ -111,7 +111,7 @@ namespace AMG
             var model = GetCubismModelSelected();
             if (model != null)
             {
-                model.GetComponent<Live2DModelController>().ConnectionIP = ModelIPDropdownBox.selectedText.text;
+                model.GetComponent<Live2DModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SetModelIP", ModelSelectionDropdownBox.selectedText.text, ModelIPDropdownBox.selectedText.text));
             }
         }

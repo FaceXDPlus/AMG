@@ -16,10 +16,15 @@ namespace AMG
 
         protected sealed override void OnDisconnected(object sender, IContenxt context)
         {
-            var ip = ((System.Net.IPEndPoint)context.Session.RemoteEndPoint).Address.ToString();
-            if (Globle.WSClients.ContainsKey(ip))
+            //var ip = ((System.Net.IPEndPoint)context.Session.RemoteEndPoint).Address.ToString();
+            var ip = context.Session.RemoteEndPoint.ToString();
+            foreach(var wsclient in Globle.WSClients)
             {
-                Globle.WSClients.Remove(ip);
+                if (wsclient.Value.ip == ip)
+                {
+                    Globle.WSClients.Remove(wsclient.Key);
+                    break;
+                }
             }
             Globle.WSClientsChanged = true;
             Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPClientDisconnect", DateTime.Now.ToString("mm:ss"), context.Session.ToString()));

@@ -9,6 +9,7 @@ namespace AMG
         [SerializeField] private GameObject ShortcutObject;
         [SerializeField] private GameObject ShortcutObjectParent;
         [SerializeField] private SettingPanelController SettingPanelController;
+        [SerializeField] private ShortcutController ShortcutController;
         private ArrayList Objects = new ArrayList();
 
         public void OnEnable()
@@ -23,34 +24,13 @@ namespace AMG
                     {
                         var item = Instantiate(ShortcutObject);
                         item.transform.SetParent(ShortcutObjectParent.transform, false);
-                        var itemController = item.GetComponent<ShortcutItemController>();
+                        var itemController = item.GetComponent<Live2DShortcutItemController>();
                         itemController.Action.text = name;
+                        itemController.Model = model;
+                        itemController.Name = name;
+                        itemController.isAnimation = true;
                         item.SetActive(true);
                     }
-                    /*var InitedParameters = model.GetComponent<Live2DModelController>().InitedParameters;
-                    foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
-                    {
-                        var advancedObject = Instantiate(AdvancedObject);
-                        advancedObject.transform.SetParent(AdvancedObjectParent.transform, false);
-                        advancedObject.SetActive(true);
-                        var controller = advancedObject.GetComponent<ModelAdvancedItemController>();
-                        controller.ParameterName.text = kvp.Value.Name;
-                        var increase = 5;
-                        //最小值
-                        controller.MinSlider.minValue = kvp.Value.MinValue - increase;
-                        controller.MinSlider.maxValue = kvp.Value.MaxValue + increase;
-                        controller.MinSlider.value = kvp.Value.MinSetValue;
-                        //最大值
-                        controller.MaxSlider.minValue = kvp.Value.MinValue - increase;
-                        controller.MaxSlider.maxValue = kvp.Value.MaxValue + increase;
-                        controller.MaxSlider.value = kvp.Value.MaxSetValue;
-                        //当前值
-                        controller.NowSlider.value = kvp.Value.NowValue;
-                        controller.NowSlider.minValue = kvp.Value.MinValue - increase;
-                        controller.NowSlider.maxValue = kvp.Value.MaxValue + increase;
-                        controller.parametersClass = kvp.Value;
-                        Objects.Add(advancedObject);
-                    }*/
                 }
             }
         }
@@ -62,5 +42,6 @@ namespace AMG
                 UnityEngine.Object.Destroy((GameObject)aobject);
             }
         }
+
     }
 }

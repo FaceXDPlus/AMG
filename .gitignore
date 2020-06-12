@@ -9,10 +9,11 @@ Assets/OpenCVForUnity
 Assets/Live2D
 Packages/
 packages.config
-Assets/StreamingAssets/models
-Assets/StreamingAssets/models.meta
 Assets/MaterialUI
 Assets/Plugins
 Assets/Scripts/Helper/DXHelper/DXHelper.cs
 Assets/Scripts/Helper/DXHelper/DXHelper.cs.meta
 Localization/~$AMG.xlsx
+Assets/StreamingAssets/live2d
+Assets/StreamingAssets/vrm
+Assets/VRM/

@@ -9,8 +9,9 @@ namespace AMG
 {
     public class Live2DModelController : MonoBehaviour
     {
-        public string ConnectionIP = "/";
-        public string ConnectionMessage = "";
+		public string ConnectionUUID = "/";
+		//public string ConnectionMessage = "";
+		public JObject ConnectionResult = null;
 		public GameObject ConnectionLost;
 		public SettingPanelController SettingPanelController = null;
 
@@ -58,14 +59,14 @@ namespace AMG
 					}
 				}
 				//处理存入的数据
-				if (ConnectionIP != "/")
+				if (ConnectionUUID != "/")
 				{
-					if (Globle.WSClients.ContainsKey(ConnectionIP))
+					if (Globle.WSClients.ContainsKey(ConnectionUUID))
 					{
-						ConnectionMessage = ObjectCopier.Clone(Globle.WSClients[ConnectionIP].message);
-						if (ConnectionMessage != "")
+						ConnectionResult = Globle.WSClients[ConnectionUUID].result;
+						if (ConnectionResult != null)
 						{
-							DoJsonPrase(ConnectionMessage);
+							DoJsonPrase(ConnectionResult);
 						}
 					}
 				}
@@ -281,11 +282,10 @@ namespace AMG
 			}
 		}
 
-		public void DoJsonPrase(string input)
+		public void DoJsonPrase(JObject jsonResult)
         {
 			try
 			{
-				var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(input);
 				foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
 				{
 					if (jsonResult.ContainsKey(kvp.Value.SDKName))

@@ -1,4 +1,5 @@
 ﻿using Live2D.Cubism.Core;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace AMG
         //0动作 1Param
         public int Duration = 1;
         public bool InProgress = false;
+        public ArrayList isPressed = new ArrayList();
 
         public void PlayAnimation()
         {
@@ -42,14 +44,6 @@ namespace AMG
                 {
                     para.Value = para.Value - get;
                 }
-            }
-        }
-
-        public void FixedUpdate()
-        {
-            if (InProgress)
-            {
-                PlayParameter(true);
             }
         }
     }

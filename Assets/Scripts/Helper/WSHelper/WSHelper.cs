@@ -17,7 +17,9 @@ namespace AMG
 
         private NetworkSocket.TcpListener listener;
         private WebSocketClient P2Pclient;
+        private WebSocketClient USBclient;
         public bool P2PClientStatus = false;
+        public bool USBClientStatus = false;
 
         public void SocketStart()
         {
@@ -26,8 +28,8 @@ namespace AMG
                 listener = new NetworkSocket.TcpListener();
                 listener.Use<WebSocketMiddleware>();
                 listener.UsePlug<WebSocketPlug>();
-                listener.Start(8041);
-                Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStart"));
+                listener.Start(8040);
+                Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStarted"));
 
             }
             catch (Exception ex)
@@ -40,7 +42,7 @@ namespace AMG
         public void SocketStop()
         {
             listener.Dispose();
-            Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStop"));
+            Globle.AddDataLog("XDP", Globle.LangController.GetLang("LOG.XDPServerStopped"));
         }
 
         public class ArrayInfo
@@ -54,13 +56,12 @@ namespace AMG
         {
             if (P2PClientStatus == true && P2PClientSwitch.isOn == true)
             {
-                var WSClients = ObjectCopier.Clone(Globle.WSClients);
                 var ipMessage = new Dictionary<string, string>();
-                foreach (KeyValuePair<string, WSClientClass> kvp in WSClients)
+                foreach (KeyValuePair<string, WSClientClass> kvp in Globle.WSClients)
                 {
-                    if (!ipMessage.ContainsKey(kvp.Value.ip) && kvp.Value.isRemote == false)
+                    if (!ipMessage.ContainsKey(kvp.Key) && kvp.Value.isRemote == false)
                     {
-                        ipMessage.Add(kvp.Value.ip, kvp.Value.message);
+                        ipMessage.Add(kvp.Key, kvp.Value.message);
                     }
                 }
                 ArrayInfo arrayInfo = new ArrayInfo
@@ -135,16 +136,81 @@ namespace AMG
                 P2Pclient.Dispose();
             }
             Globle.AddDataLog("WSC", Globle.LangController.GetLang("LOG.WSCClientStopped"));
-            var RemoteIPMessage = ObjectCopier.Clone(Globle.WSClients);
-            foreach (KeyValuePair<string, WSClientClass> kvp in RemoteIPMessage)
+            var readyToRemove = new ArrayList();
+            foreach (KeyValuePair<string, WSClientClass> kvp in Globle.WSClients)
             {
                 if (kvp.Value.isRemote == true)
                 {
-                    Globle.WSClients.Remove(kvp.Key);
+                    readyToRemove.Add(kvp.Key);
                 }
+            }
+            foreach (string aa in readyToRemove)
+            {
+                Globle.WSClients.Remove(aa);
             }
             Globle.WSClientsChanged = true;
         }
+
+        public async void USBClientStart()
+        {
+            try
+            {
+                Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.USBClientStarting"));
+
+                var uri = new Uri("ws://127.0.0.1:22546");
+                USBclient = new USBWebSocketClient(uri);
+
+                var addresses = System.Net.Dns.GetHostAddresses(uri.Host);
+                if (addresses.Length == 0)
+                {
+                    throw new ArgumentException(
+                        Globle.LangController.GetLang("LOG.USBClientIPFailed"),
+                        ""
+                    );
+                }
+                await USBclient.ConnectAsync(addresses[0], uri.Port);
+                if (USBclient.IsConnected)
+                {
+                    USBClientStatus = true;
+                    Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.USBClientStarted"));
+                }
+                else
+                {
+                    USBClientSwitch.isOn = false;
+                    Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.USBClientStartedFailed"));
+                }
+            }
+            catch (Exception ex)
+            {
+                USBClientSwitch.isOn = false;
+                Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.USBClientException", ex.Message));
+            }
+        }
+
+        public void USBClientStop()
+        {
+            if (USBclient != null)
+            {
+                USBClientStatus = false;
+                USBclient.Close();
+                USBclient.Dispose();
+            }
+            Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.USBClientStopped"));
+            var readyToRemove = new ArrayList();
+            foreach (KeyValuePair<string, WSClientClass> kvp in Globle.WSClients)
+            {
+                if (kvp.Value.isUSB == true)
+                {
+                    readyToRemove.Add(kvp.Key);
+                }
+            }
+            foreach (string aa in readyToRemove)
+            {
+                Globle.WSClients.Remove(aa);
+            }
+            Globle.WSClientsChanged = true;
+        }
+
 
     }
 }

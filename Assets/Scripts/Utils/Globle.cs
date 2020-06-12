@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Live2D.Cubism.Core;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +11,17 @@ namespace AMG
     {
         public static string APPName = "AMG-RM";
         public static string APPVersion = "Beta 0.1";
-        public static string APPBuild = "1";
+        public static string APPBuild = "4";
 
         public static int ModelNum = 1;
+
         public static ArrayList ModelList = new ArrayList();
+
+        //public static Dictionary<CubismModel, string> ModelDuidList = new Dictionary<CubismModel, string>();
+
+        //uuid, WSClient
         public static Dictionary<string, WSClientClass> WSClients = new Dictionary<string, WSClientClass>();
+
         public static bool WSClientsChanged = false;
 
         public static string DataLog = "";
@@ -51,8 +59,12 @@ namespace AMG
     {
         public string ip = "";
         public string message = "";
+        public string uuid = "";
         public DateTime lastUpdated;
         public bool isRemote = false;
+        public bool isUSB = false;
+
+        public JObject result;
     }
 
 }
