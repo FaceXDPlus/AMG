@@ -45,6 +45,7 @@ namespace AMG
         //其他控制器
         [SerializeField] private Live2DHelper Live2DHelper;
         [SerializeField] private LangController LangController;
+        [SerializeField] private ShortcutController ShortcutController;
 
         void Start()
         {
@@ -180,6 +181,7 @@ namespace AMG
             var model = GetCubismModelSelected();
             if (model != null)
             {
+                ShortcutController.RemoveShortcutClassByModel(model);
                 Globle.ModelList.Remove(model);
                 UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>().ConnectionLost);
                 UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>());

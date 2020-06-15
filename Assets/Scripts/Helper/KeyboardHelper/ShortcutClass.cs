@@ -22,6 +22,13 @@ namespace AMG
         //0动作 1Param
         //public int Duration = 1;
         //public bool InProgress = false;
+
+
+        public bool IsInvert = false;
+        public bool IsLock = false;
+        public bool InProgress = false;
+        public bool InProgressIncrease = true;
+
         public List<string> isCPressed;
         public ShortcutController ShortcutController;
 
@@ -35,7 +42,15 @@ namespace AMG
                             PlayAnimation();
                             break;
                         case 1:
-                            PlayParameter(true);
+                            if (!IsLock)
+                            {
+                                PlayParameter(!IsInvert);
+                            }
+                            else if (IsLock && !InProgress)
+                            {
+                                //Debug.Log("Start");
+                                InProgress = true;
+                            }
                             break;
                     }
                     break;
@@ -64,9 +79,16 @@ namespace AMG
                         case 0:
                             break;
                         case 1:
-                            if (!ShortcutController.GetContains(isCPressed))
+                            if (!IsLock)
                             {
-                                PlayParameter(false);
+                                if (!ShortcutController.GetContains(isCPressed))
+                                {
+                                    PlayParameter(IsInvert);
+                                }
+                            }
+                            else if (IsLock && InProgress)
+                            {
+                                PlayParameter(InProgressIncrease);
                             }
                             break;
                     }
@@ -87,11 +109,12 @@ namespace AMG
                 if (paraC != null)
                 {
                     var get = (paraC.MaximumValue - paraC.MinimumValue) / 60;
+                    var now = 0f;
                     if (isIncrease)
                     {
                         if (paraC.Value < paraC.MaximumValue)
                         {
-                            var now = paraC.Value + get;
+                            now = paraC.Value + get;
                             model.GetComponent<Live2DModelController>().setParameter(paraC, now, paraC.MinimumValue, paraC.MaximumValue, paraC.MinimumValue, paraC.MaximumValue);
                         }
                     }
@@ -99,9 +122,15 @@ namespace AMG
                     {
                         if (paraC.Value > paraC.MinimumValue)
                         {
-                            var now = paraC.Value - get;
+                            now = paraC.Value - get;
                             model.GetComponent<Live2DModelController>().setParameter(paraC, now, paraC.MinimumValue, paraC.MaximumValue, paraC.MinimumValue, paraC.MaximumValue);
                         }
+                    }
+                    if (IsLock && InProgress && (now >= paraC.MaximumValue || now <= paraC.MinimumValue))
+                    {
+                        //Debug.Log("Stop " + paraC.Value);
+                        InProgress = false;
+                        InProgressIncrease = !InProgressIncrease;
                     }
                 }
             }

@@ -75,6 +75,7 @@ namespace AMG
             public Dictionary<string, string> ModelOtherSettings { get; set; }
             public Dictionary<string, string> ModelLocationSettings { get; set; }
             public Dictionary<string, Dictionary<string, string>> ShortcutPair { get; set; }
+            //uuid int
         }
     }
 }

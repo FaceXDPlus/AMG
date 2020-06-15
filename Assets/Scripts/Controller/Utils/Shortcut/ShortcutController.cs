@@ -74,6 +74,26 @@ namespace AMG
             }
         }
 
+        public void RemoveShortcutClassByModel(object model)
+        {
+            var WaitDict = new Dictionary<List<string>, string>();
+            //清理快捷键
+            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
+            {
+                foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutDict[kvp.Key])
+                {
+                    if (kkvp.Value.Model == model)
+                    {
+                        WaitDict.Add(kvp.Key, kkvp.Key);
+                    }
+                }
+            }
+            foreach (KeyValuePair<List<string>, string> kvp in WaitDict)
+            {
+                RemoveShortcutClass(kvp.Value);
+            }
+        }
+
         public bool GetContains(List<string> isCPressed)
         {
             foreach (string key in isCPressed)
