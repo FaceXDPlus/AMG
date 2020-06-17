@@ -29,9 +29,11 @@ namespace AMG
 		public Animation Animation;
 
 		public bool LostReset = false;
+		public bool LostResetEye = false; 
 		public int LostResetAction = 0;
 		//0无 1动作 2PNG队列
 		public string LostResetMotion = "/";
+		public bool LostResetMotionLoop = false;
 		//判断
 		public int LostResetValue = 0;
 		public float LostResetLastZ = 0;
@@ -143,6 +145,7 @@ namespace AMG
 					else
 					{
 						ConnectionLost.SetActive(false);
+						Animation.Stop(LostResetMotion);
 					}
 					break;
 				case 1:
@@ -150,12 +153,31 @@ namespace AMG
 					{
 						if (animationClips.Contains(LostResetMotion))
 						{
-							this.Animation.Blend(LostResetMotion);
+							if (LostResetMotionLoop)
+							{
+								var nn = Animation.GetClip(LostResetMotion);
+								Animation.RemoveClip(nn);
+								nn.wrapMode = WrapMode.Loop;
+								Animation.AddClip(nn, nn.name);
+							}
+							else
+							{
+								var nn = Animation.GetClip(LostResetMotion);
+								Animation.RemoveClip(nn);
+								nn.wrapMode = WrapMode.Once;
+								Animation.AddClip(nn, nn.name);
+							}
+							Animation.Blend(LostResetMotion);
 						}
+					}
+					else
+					{
+						Animation.Stop(LostResetMotion);
 					}
 					break;
 				case 2:
 					ConnectionLost.SetActive(isOn);
+					Animation.Stop(LostResetMotion);
 					break;
 			}
 		}
@@ -265,7 +287,12 @@ namespace AMG
 		{
 			foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
 			{
-				if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
+				if (LostResetEye == true && (kvp.Value.Name == "paramEyeLOpen" || kvp.Value.Name == "paramEyeROpen"))
+				{
+					var para = (CubismParameter)kvp.Value.Parameter;
+					para.Value = 1;
+				}
+				else if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
 				{
 					var para = (CubismParameter)kvp.Value.Parameter;
 					para.Value = 0;
@@ -381,9 +408,11 @@ namespace AMG
 		{
 			var returnDict = new Dictionary<string, string>();
 			returnDict.Add("LostReset", LostReset.ToString());
+			returnDict.Add("LostResetEye", LostResetEye.ToString());
 			returnDict.Add("LostResetAction", LostResetAction.ToString());
 			returnDict.Add("LostResetMotion", LostResetMotion);
-			return returnDict;
+			returnDict.Add("LostResetMotionLoop", LostResetMotionLoop.ToString());
+			return returnDict; 
 		}
 
 		public void SetModelOtherSettings(Dictionary<string, string> otherDict)
@@ -392,6 +421,10 @@ namespace AMG
 			{
 				LostReset = bool.Parse(otherDict["LostReset"]);
 			}
+			if (CheckNameInDict("LostResetEye", otherDict))
+			{
+				LostResetEye = bool.Parse(otherDict["LostResetEye"]);
+			}
 			if (CheckNameInDict("LostResetAction", otherDict))
 			{
 				LostResetAction = int.Parse(otherDict["LostResetAction"]);
@@ -399,6 +432,10 @@ namespace AMG
 			if (CheckNameInDict("LostResetMotion", otherDict))
 			{
 				LostResetMotion = otherDict["LostResetMotion"];
+			}
+			if (CheckNameInDict("LostResetMotionLoop", otherDict))
+			{
+				LostResetMotionLoop = bool.Parse(otherDict["LostResetMotionLoop"]);
 			}
 		}
 

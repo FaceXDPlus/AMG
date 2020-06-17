@@ -26,6 +26,10 @@ namespace AMG
 
         public bool IsInvert = false;
         public bool IsLock = false;
+        public bool IsLoop = false;
+        public bool IsLoopRun = false;
+        public bool LoopLock = false;
+        public float fps = 60;
         public bool InProgress = false;
         public bool InProgressIncrease = true;
 
@@ -48,7 +52,6 @@ namespace AMG
                             }
                             else if (IsLock && !InProgress)
                             {
-                                //Debug.Log("Start");
                                 InProgress = true;
                             }
                             break;
@@ -65,8 +68,39 @@ namespace AMG
             var model = (CubismModel)Model;
             if (model.GetComponent<Live2DModelController>() != null)
             {
-                model.GetComponent<Live2DModelController>().Animation.Blend(AnimationClip);
+                var animation = model.GetComponent<Live2DModelController>().Animation;
+                if (IsLoop && !IsLoopRun && !LoopLock)
+                {
+                    var nn = animation.GetClip(AnimationClip);
+                    animation.RemoveClip(nn);
+                    nn.wrapMode = WrapMode.Loop;
+                    animation.AddClip(nn, nn.name);
+                    animation.Blend(AnimationClip);
+                    IsLoopRun = true;
+                    LoopLock = true;
+                    Invoke("UnlockLoop", 1f);
+                }
+                else if (IsLoop && IsLoopRun && !LoopLock)
+                {
+                    animation.Stop(AnimationClip);
+                    IsLoopRun = false;
+                    LoopLock = true;
+                    Invoke("UnlockLoop", 1f);
+                }
+                else if (!IsLoop) 
+                {
+                    var nn = animation.GetClip(AnimationClip);
+                    animation.RemoveClip(nn);
+                    nn.wrapMode = WrapMode.Once;
+                    animation.AddClip(nn, nn.name);
+                    animation.Blend(AnimationClip);
+                }
             }
+        }
+
+        private void UnlockLoop()
+        {
+            LoopLock = false;
         }
 
         private void LateUpdate()
@@ -108,7 +142,7 @@ namespace AMG
                 var paraC = model.Parameters.FindById(Parameter);
                 if (paraC != null)
                 {
-                    var get = (paraC.MaximumValue - paraC.MinimumValue) / 60;
+                    var get = (paraC.MaximumValue - paraC.MinimumValue) / fps;
                     var now = 0f;
                     if (isIncrease)
                     {
@@ -126,11 +160,21 @@ namespace AMG
                             model.GetComponent<Live2DModelController>().setParameter(paraC, now, paraC.MinimumValue, paraC.MaximumValue, paraC.MinimumValue, paraC.MaximumValue);
                         }
                     }
-                    if (IsLock && InProgress && (now >= paraC.MaximumValue || now <= paraC.MinimumValue))
+                    if (IsLock && InProgress)
                     {
-                        //Debug.Log("Stop " + paraC.Value);
-                        InProgress = false;
-                        InProgressIncrease = !InProgressIncrease;
+                        if (now >= paraC.MaximumValue)
+                        {
+                            InProgress = false;
+                            InProgressIncrease = false;
+                            //Debug.Log("Stop " + now + InProgressIncrease);
+                        }
+                        else if (now <= paraC.MinimumValue)
+                        {
+                            InProgress = false;
+                            InProgressIncrease = true;
+                            //Debug.Log("Stop " + now + InProgressIncrease);
+                        }
+                        //Debug.Log("rua " + now + InProgressIncrease);
                     }
                 }
             }

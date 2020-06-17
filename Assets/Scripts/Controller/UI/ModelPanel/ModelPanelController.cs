@@ -2,7 +2,6 @@
 using Live2D.Cubism.Rendering;
 using MaterialUI;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,6 +12,8 @@ namespace AMG
     public class ModelPanelController : MonoBehaviour
     {
         [SerializeField] private Toggle ModelLostResetToggle;
+        [SerializeField] private Toggle ModelLostResetEyeToggle;
+        [SerializeField] private Toggle ModelMotionLoopToggle;
         [SerializeField] private Slider ModelShowLevelSlider;
         [SerializeField] private SelectionBoxConfig ModelLostResetChooseDropdown;
         [SerializeField] private SelectionBoxConfig ModelLostResetActionDropdown;
@@ -31,6 +32,8 @@ namespace AMG
         {
             ModelShowLevelSlider.onValueChanged.AddListener((float value) => { OnModelShowLevelSliderValueChanged(value); });
             ModelLostResetToggle.onValueChanged.AddListener((bool value) => { OnModelLostResetToggleValueChanged(value); });
+            ModelLostResetEyeToggle.onValueChanged.AddListener((bool value) => { OnModelLostResetEyeToggleValueChanged(value); });
+            ModelMotionLoopToggle.onValueChanged.AddListener((bool value) => { OnModelMotionLoopToggleValueChanged(value); });
             ModelLostResetChooseDropdown.ItemPicked += OnModelLostResetChooseDropdownSelected;
             ModelLostResetActionDropdown.ItemPicked += OnModelLostResetActionDropdownSelected;
             ModelConfigSaveButton.onClick.AddListener(() => { OnModelConfigSaveButtonClick(); });
@@ -45,7 +48,9 @@ namespace AMG
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
                     var controller = model.GetComponent<Live2DModelController>();
-                    ModelLostResetToggle.isOn  = controller.LostReset;
+                    ModelLostResetToggle.isOn = controller.LostReset;
+                    ModelLostResetEyeToggle.isOn = controller.LostResetEye;
+                    ModelMotionLoopToggle.isOn = controller.LostResetMotionLoop;
                     ModelLostResetChooseDropdown.selectedText.text = ModelLostResetChooseDropdown.listItems[controller.LostResetAction];
                     ModelLostResetActionDropdown.listItems = new string[controller.animationClips.Count];
                     var i = 0;
@@ -96,7 +101,7 @@ namespace AMG
                 {
                     var controller = model.GetComponent<Live2DModelController>();
                     //处理快捷键
-                    var aniDict = new Dictionary<string, Dictionary<string, string>>(); 
+                    var aniDict = new Dictionary<string, Dictionary<string, string>>();
 
                     foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
                     {
@@ -113,6 +118,8 @@ namespace AMG
                                 ddict.Add("Type", kkvp.Value.Type.ToString());
                                 ddict.Add("IsInvert", kkvp.Value.IsInvert.ToString());
                                 ddict.Add("IsLock", kkvp.Value.IsLock.ToString());
+                                ddict.Add("IsLoop", kkvp.Value.IsLoop.ToString());
+                                ddict.Add("Duration", kkvp.Value.fps.ToString());
                                 var KeyboardPressedString = string.Join(",", kkvp.Value.isCPressed.ToArray());
                                 ddict.Add("isCPressed", KeyboardPressedString);
                                 aniDict.Add(kkvp.Value.UUID, ddict);
@@ -143,7 +150,7 @@ namespace AMG
                         {
                             controller.ConnectionUUID = data.LastDUID;
                         }
-                        SetValueToShortcut(data.ShortcutPair, model);
+                        SetValueToCubismShortcut(data.ShortcutPair, model);
                         SetValueFromModel();
                         SettingPanelController.ResetModelAdvancedPanel();
                         SettingPanelController.ResetShortcutPanel();
@@ -169,6 +176,32 @@ namespace AMG
             }
         }
 
+        public void OnModelLostResetEyeToggleValueChanged(bool value)
+        {
+            var model = SettingPanelController.GetCubismModelSelected();
+            if (model != null)
+            {
+                if (model.GetComponent<Live2DModelController>() != null)
+                {
+                    var controller = model.GetComponent<Live2DModelController>();
+                    controller.LostResetEye = value;
+                }
+            }
+        }
+
+        public void OnModelMotionLoopToggleValueChanged(bool value)
+        {
+            var model = SettingPanelController.GetCubismModelSelected();
+            if (model != null)
+            {
+                if (model.GetComponent<Live2DModelController>() != null)
+                {
+                    var controller = model.GetComponent<Live2DModelController>();
+                    controller.LostResetMotionLoop = value;
+                }
+            }
+        }
+
         public void OnModelShowLevelSliderValueChanged(float value)
         {
             var model = SettingPanelController.GetCubismModelSelected();
@@ -181,29 +214,37 @@ namespace AMG
             }
         }
 
-        public void SetValueToShortcut(Dictionary<string, Dictionary<string, string>> aniDict, object model)
+        public void SetValueToCubismShortcut(Dictionary<string, Dictionary<string, string>> aniDict, CubismModel model)
         {
-            foreach (KeyValuePair<string, Dictionary<string, string>> kvp in aniDict)
+            if (model.GetComponent<Live2DModelController>() != null)
             {
-                var ani = aniDict[kvp.Key];
-                var isPressed = ani["isCPressed"].Split(',').ToList();
+                var controller = model.GetComponent<Live2DModelController>();
+                foreach (KeyValuePair<string, Dictionary<string, string>> kvp in aniDict)
+                {
+                    var ani = aniDict[kvp.Key];
+                    var isPressed = ani["isCPressed"].Split(',').ToList();
 
-                var item = Instantiate(ShortcutClassObject);
-                item.transform.SetParent(ShortcutClassObjectParent.transform, false);
-                var sclass = item.GetComponent<ShortcutClass>();
-
-                sclass.Model = model;
-                sclass.AnimationClip = ani["AnimationClip"];
-                sclass.Parameter = ani["Parameter"];
-                sclass.UUID = ani["UUID"];
-                sclass.isCPressed = isPressed;
-                sclass.isPressedText = ani["isPressedText"];
-                sclass.MType = int.Parse(ani["MType"]);
-                sclass.Type = int.Parse(ani["Type"]);
-                sclass.IsInvert = bool.Parse(ani["IsInvert"]);
-                sclass.IsLock = bool.Parse(ani["IsLock"]);
-                ShortcutController.SetShortcutClass(isPressed, sclass, ani["UUID"]);
-                item.SetActive(true);
+                    if (model.Parameters.FindById(ani["Parameter"]) != null || controller.animationClips.Contains(ani["AnimationClip"]))
+                    {
+                        var item = Instantiate(ShortcutClassObject);
+                        item.transform.SetParent(ShortcutClassObjectParent.transform, false);
+                        var sclass = item.GetComponent<ShortcutClass>();
+                        sclass.Model = model;
+                        sclass.AnimationClip = ani["AnimationClip"];
+                        sclass.Parameter = ani["Parameter"];
+                        sclass.UUID = ani["UUID"];
+                        sclass.isCPressed = isPressed;
+                        sclass.isPressedText = ani["isPressedText"];
+                        sclass.MType = int.Parse(ani["MType"]);
+                        sclass.Type = int.Parse(ani["Type"]);
+                        sclass.IsInvert = bool.Parse(ani["IsInvert"]);
+                        sclass.IsLock = bool.Parse(ani["IsLock"]);
+                        sclass.IsLoop = bool.Parse(ani["IsLock"]);
+                        sclass.fps  = float.Parse(ani["Duration"]);
+                        ShortcutController.SetShortcutClass(isPressed, sclass, ani["UUID"]);
+                        item.SetActive(true);
+                    }
+                }
             }
         }
     }

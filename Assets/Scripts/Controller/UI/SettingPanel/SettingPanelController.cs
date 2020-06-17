@@ -150,8 +150,8 @@ namespace AMG
                 model.GetComponent<Live2DModelController>().ConnectionLost = connectionLost;
                 ResetModelSelectionDropdown();
                 ModelIPDropdownBox.selectedText.text = "/"; 
-                ModelIPDropdownBox.currentSelection = -1;
-                ModelPanelController.OnModelConfigLoadButtonClick();
+                ModelIPDropdownBox.currentSelection = -1; 
+                Invoke("ReloadModelSettings", 0.7f);
             }
         }
 
@@ -226,6 +226,11 @@ namespace AMG
             ShortcutPanelController.OnDisable();
             ShortcutPanelController.gameObject.SetActive(false);
             MainPanelController.ShortcutToggle.isOn = false;
+        }
+
+        public void ReloadModelSettings()
+        {
+            ModelPanelController.OnModelConfigLoadButtonClick();
         }
 
         #endregion

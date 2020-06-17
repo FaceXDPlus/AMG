@@ -18,6 +18,7 @@ namespace AMG
 
         [SerializeField] public Toggle InvertToggle;
         [SerializeField] public Toggle LockToggle;
+        [SerializeField] public Toggle LoopToggle;
 
         [SerializeField] private ShortcutController ShortcutController;
         [SerializeField] private GameObject ShortcutClassObject;
@@ -36,6 +37,7 @@ namespace AMG
             ClearButton.onClick.AddListener(OnClearButtonClick);
             InvertToggle.onValueChanged.AddListener((bool value) => { OnInvertToggleValueChanged(value); });
             LockToggle.onValueChanged.AddListener((bool value) => { OnLockToggleValueChanged(value); });
+            LoopToggle.onValueChanged.AddListener((bool value) => { OnLoopToggleValueChanged(value); });
         }
 
         private void OnLockToggleValueChanged(bool isOn)
@@ -49,6 +51,24 @@ namespace AMG
                         if (UUID == kkvp.Key)
                         {
                             ShortcutController.ShortcutDict[kvp.Key][UUID].IsLock = isOn;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnLoopToggleValueChanged(bool isOn)
+        {
+            if (UUID != "")
+            {
+                foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
+                {
+                    foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                    {
+                        if (UUID == kkvp.Key)
+                        {
+                            ShortcutController.ShortcutDict[kvp.Key][UUID].IsLoop = isOn;
                             break;
                         }
                     }
@@ -76,7 +96,20 @@ namespace AMG
 
         private void OnDurationValueChanged(float value)
         {
-
+            if (UUID != "")
+            {
+                foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
+                {
+                    foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                    {
+                        if (UUID == kkvp.Key)
+                        {
+                            ShortcutController.ShortcutDict[kvp.Key][UUID].fps = value;
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         private void OnItemButtonClick()
@@ -113,6 +146,7 @@ namespace AMG
                 {
                     sclass.Type = 0;
                     sclass.AnimationClip = Name;
+                    sclass.IsLoop = LoopToggle.isOn;
                 }
                 else
                 {
@@ -120,6 +154,7 @@ namespace AMG
                     sclass.Parameter = Name;
                     sclass.IsInvert = InvertToggle.isOn;
                     sclass.IsLock = LockToggle.isOn;
+                    sclass.fps = Duration.value;
                 }
                 UUID = System.Guid.NewGuid().ToString();
                 ShortcutController.SetShortcutClass(isPressed, sclass, UUID);

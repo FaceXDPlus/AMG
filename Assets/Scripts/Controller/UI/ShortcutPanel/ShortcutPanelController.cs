@@ -48,8 +48,10 @@ namespace AMG
                         itemController.Model = model;
                         itemController.Name = name;
                         itemController.isAnimation = true;
+                        itemController.LoopToggle.gameObject.SetActive(true);
                         itemController.InvertToggle.gameObject.SetActive(false);
                         itemController.LockToggle.gameObject.SetActive(false);
+                        itemController.Duration.gameObject.SetActive(false);
                         if (aniDict.ContainsKey(name))
                         {
                             var sclass = aniDict[name];
@@ -75,13 +77,13 @@ namespace AMG
                             {
                                 var sclass = aniDict[param.name];
                                 itemController.UUID = sclass.UUID;
+                                itemController.Duration.value = sclass.fps;
                                 itemController.Shortcut.text = sclass.isPressedText;
                                 itemController.InvertToggle.isOn = sclass.IsInvert;
                                 itemController.LockToggle.isOn = sclass.IsLock;
                             }
                             item.SetActive(true);
                             Objects.Add(item);
-
                         }
                     }
                 }
