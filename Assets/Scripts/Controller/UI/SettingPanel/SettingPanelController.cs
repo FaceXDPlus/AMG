@@ -151,6 +151,7 @@ namespace AMG
                 ResetModelSelectionDropdown();
                 ModelIPDropdownBox.selectedText.text = "/"; 
                 ModelIPDropdownBox.currentSelection = -1;
+                ModelPanelController.OnModelConfigLoadButtonClick();
             }
         }
 
@@ -216,11 +217,15 @@ namespace AMG
         public void ResetModelAdvancedPanel()
         {
             ModelAdvancedController.OnDisable();
+            ModelAdvancedController.gameObject.SetActive(false);
+            MainPanelController.ModelAdvancedToggle.isOn = false;
         }
 
         public void ResetShortcutPanel()
         {
             ShortcutPanelController.OnDisable();
+            ShortcutPanelController.gameObject.SetActive(false);
+            MainPanelController.ShortcutToggle.isOn = false;
         }
 
         #endregion

@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace AMG
@@ -387,9 +388,18 @@ namespace AMG
 
 		public void SetModelOtherSettings(Dictionary<string, string> otherDict)
 		{
-			LostReset = bool.Parse(otherDict["LostReset"]);
-			LostResetAction = int.Parse(otherDict["LostResetAction"]);
-			LostResetMotion = otherDict["LostResetMotion"];
+			if (CheckNameInDict("LostReset", otherDict))
+			{
+				LostReset = bool.Parse(otherDict["LostReset"]);
+			}
+			if (CheckNameInDict("LostResetAction", otherDict))
+			{
+				LostResetAction = int.Parse(otherDict["LostResetAction"]);
+			}
+			if (CheckNameInDict("LostResetMotion", otherDict))
+			{
+				LostResetMotion = otherDict["LostResetMotion"];
+			}
 		}
 
 		public Dictionary<string, string> GetModelLocationSettings()
@@ -407,12 +417,31 @@ namespace AMG
 
 		public void SetModelLocationSettings(Dictionary<string, string> locationInfo)
 		{
-			transform.position = new Vector3(Convert.ToSingle(locationInfo["transformXValue"]), Convert.ToSingle(locationInfo["transformYValue"]), transform.position.z);
-			transform.localScale = new Vector3(Convert.ToSingle(locationInfo["transformSValue"]), Convert.ToSingle(locationInfo["transformSValue"]));
-			transform.localEulerAngles = new Vector3(0, 0, Convert.ToSingle(locationInfo["transformRValue"]));
-			ConnectionLost.transform.position = new Vector3(Convert.ToSingle(locationInfo["ctransformXValue"]), Convert.ToSingle(locationInfo["ctransformYValue"]), ConnectionLost.transform.position.z);
-			ConnectionLost.transform.localScale = new Vector3(Convert.ToSingle(locationInfo["ctransformSValue"]), Convert.ToSingle(locationInfo["ctransformSValue"]));
+			if (CheckNameInDict("transformXValue", locationInfo) && CheckNameInDict("transformYValue", locationInfo))
+			{
+				transform.position = new Vector3(Convert.ToSingle(locationInfo["transformXValue"]), Convert.ToSingle(locationInfo["transformYValue"]), transform.position.z);
+			}
+			if (CheckNameInDict("transformSValue", locationInfo))
+			{
+				transform.localScale = new Vector3(Convert.ToSingle(locationInfo["transformSValue"]), Convert.ToSingle(locationInfo["transformSValue"]));
+			}
+			if (CheckNameInDict("transformRValue", locationInfo))
+			{
+				transform.localEulerAngles = new Vector3(0, 0, Convert.ToSingle(locationInfo["transformRValue"]));
+			}
+			if (CheckNameInDict("ctransformXValue", locationInfo) && CheckNameInDict("ctransformYValue", locationInfo))
+			{
+				ConnectionLost.transform.position = new Vector3(Convert.ToSingle(locationInfo["ctransformXValue"]), Convert.ToSingle(locationInfo["ctransformYValue"]), ConnectionLost.transform.position.z);
+			}
+			if (CheckNameInDict("ctransformSValue", locationInfo))
+			{
+				ConnectionLost.transform.localScale = new Vector3(Convert.ToSingle(locationInfo["ctransformSValue"]), Convert.ToSingle(locationInfo["ctransformSValue"]));
+			}
 		}
 
+		public bool CheckNameInDict(string name, Dictionary<string, string> otherDict)
+		{
+			return otherDict.ContainsKey(name);
+		}
 	}
 }

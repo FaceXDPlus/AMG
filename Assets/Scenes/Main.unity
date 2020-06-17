@@ -24774,6 +24774,9 @@ MonoBehaviour:
   ModelConfigLoadButton: {fileID: 1525350353}
   SaveController: {fileID: 723514439}
   SettingPanelController: {fileID: 1157683681}
+  ShortcutClassObject: {fileID: 2109958990}
+  ShortcutClassObjectParent: {fileID: 397300011}
+  ShortcutController: {fileID: 1731563212}
 --- !u!1 &1670848302
 GameObject:
   m_ObjectHideFlags: 0

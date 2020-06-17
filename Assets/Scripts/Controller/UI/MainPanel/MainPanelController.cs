@@ -16,7 +16,7 @@ namespace AMG
         [SerializeField] private DXHelper dxInterface;
 
         //模型细调部分
-        [SerializeField] private Toggle ModelAdvancedToggle;
+        [SerializeField] public Toggle ModelAdvancedToggle;
         [SerializeField] private GameObject ModelAdvancedPanel;
         [SerializeField] private ModelAdvancedController ModelAdvancedController;
 
@@ -25,7 +25,7 @@ namespace AMG
         [SerializeField] private WSHelper WebSocketHelper;
 
         //快捷键窗口部分
-        [SerializeField] private Toggle ShortcutToggle;
+        [SerializeField] public Toggle ShortcutToggle;
         [SerializeField] private GameObject ShortcutPanel;
 
 

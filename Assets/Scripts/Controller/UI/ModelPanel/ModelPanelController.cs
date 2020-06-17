@@ -4,6 +4,7 @@ using MaterialUI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,11 @@ namespace AMG
         [SerializeField] private Button ModelConfigLoadButton;
         [SerializeField] private SaveController SaveController;
         [SerializeField] private SettingPanelController SettingPanelController;
+
+
+        [SerializeField] private GameObject ShortcutClassObject;
+        [SerializeField] private GameObject ShortcutClassObjectParent;
+        [SerializeField] private ShortcutController ShortcutController;
 
 
         private void Start()
@@ -90,27 +96,31 @@ namespace AMG
                 {
                     var controller = model.GetComponent<Live2DModelController>();
                     //处理快捷键
+                    var aniDict = new Dictionary<string, Dictionary<string, string>>(); 
 
-                    /*foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
+                    foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutController.ShortcutDict)
                     {
                         foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutController.ShortcutDict[kvp.Key])
                         {
                             if (kkvp.Value.Model == model)
                             {
-                                if (kkvp.Value.Type == 0)
-                                {
-                                    //aniDict.Add(kkvp.Value.AnimationClip, kkvp.Value);
-                                }
-                                else if (kkvp.Value.Type == 1)
-                                {
-                                    //aniDict.Add(kkvp.Value.Parameter, kkvp.Value);
-                                }
+                                var ddict = new Dictionary<string, string>();
+                                ddict.Add("AnimationClip", kkvp.Value.AnimationClip);
+                                ddict.Add("Parameter", kkvp.Value.Parameter);
+                                ddict.Add("UUID", kkvp.Value.UUID);
+                                ddict.Add("isPressedText", kkvp.Value.isPressedText);
+                                ddict.Add("MType", kkvp.Value.MType.ToString());
+                                ddict.Add("Type", kkvp.Value.Type.ToString());
+                                ddict.Add("IsInvert", kkvp.Value.IsInvert.ToString());
+                                ddict.Add("IsLock", kkvp.Value.IsLock.ToString());
+                                var KeyboardPressedString = string.Join(",", kkvp.Value.isCPressed.ToArray());
+                                ddict.Add("isCPressed", KeyboardPressedString);
+                                aniDict.Add(kkvp.Value.UUID, ddict);
                             }
                         }
-                    }*/
+                    }
 
-
-                    SaveController.SaveUserData(controller.ModelPath, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), null);
+                    SaveController.SaveUserData(controller.ModelPath, controller.ConnectionUUID, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), aniDict);
                 }
             }
         }
@@ -129,13 +139,20 @@ namespace AMG
                         controller.SetModelSettings(data.ModelAlign);
                         controller.SetModelOtherSettings(data.ModelOtherSettings);
                         controller.SetModelLocationSettings(data.ModelLocationSettings);
+                        if (data.LastDUID != null)
+                        {
+                            controller.ConnectionUUID = data.LastDUID;
+                        }
+                        SetValueToShortcut(data.ShortcutPair, model);
                         SetValueFromModel();
+                        SettingPanelController.ResetModelAdvancedPanel();
+                        SettingPanelController.ResetShortcutPanel();
                     }
                 }
             }
             catch (Exception err)
             {
-                Globle.AddDataLog("Main", Globle.LangController.GetLang("LOG.ModelConfigLoadException", err.Message));
+                Globle.AddDataLog("Main", Globle.LangController.GetLang("LOG.ModelConfigLoadException", err.StackTrace));
             }
         }
 
@@ -161,6 +178,32 @@ namespace AMG
                 {
                     model.gameObject.GetComponent<CubismRenderController>().SortingOrder = (int)value;
                 }
+            }
+        }
+
+        public void SetValueToShortcut(Dictionary<string, Dictionary<string, string>> aniDict, object model)
+        {
+            foreach (KeyValuePair<string, Dictionary<string, string>> kvp in aniDict)
+            {
+                var ani = aniDict[kvp.Key];
+                var isPressed = ani["isCPressed"].Split(',').ToList();
+
+                var item = Instantiate(ShortcutClassObject);
+                item.transform.SetParent(ShortcutClassObjectParent.transform, false);
+                var sclass = item.GetComponent<ShortcutClass>();
+
+                sclass.Model = model;
+                sclass.AnimationClip = ani["AnimationClip"];
+                sclass.Parameter = ani["Parameter"];
+                sclass.UUID = ani["UUID"];
+                sclass.isCPressed = isPressed;
+                sclass.isPressedText = ani["isPressedText"];
+                sclass.MType = int.Parse(ani["MType"]);
+                sclass.Type = int.Parse(ani["Type"]);
+                sclass.IsInvert = bool.Parse(ani["IsInvert"]);
+                sclass.IsLock = bool.Parse(ani["IsLock"]);
+                ShortcutController.SetShortcutClass(isPressed, sclass, ani["UUID"]);
+                item.SetActive(true);
             }
         }
     }

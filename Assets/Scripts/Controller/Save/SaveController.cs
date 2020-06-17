@@ -37,13 +37,14 @@ namespace AMG
             }
         }
 
-        public void SaveUserData(string path, Dictionary<string, string> userdict, Dictionary<string, string> otherdict, Dictionary<string, string> locationdict, Dictionary<string, Dictionary<string, string>> shortcutPair)
+        public void SaveUserData(string path, string LastDUId, Dictionary<string, string> userdict, Dictionary<string, string> otherdict, Dictionary<string, string> locationdict, Dictionary<string, Dictionary<string, string>> shortcutPair)
         {
             try
             {
                 SaveArrayInfo arrayInfo = new SaveArrayInfo
                 {
                     APPVersion = Globle.APPVersion,
+                    LastDUID = LastDUId,
                     ModelAlign = userdict,
                     ModelOtherSettings = otherdict,
                     ModelLocationSettings = locationdict,
@@ -71,11 +72,12 @@ namespace AMG
         public class SaveArrayInfo
         {
             public string APPVersion { get; set; }
+            public string LastDUID { get; set; }
             public Dictionary<string, string> ModelAlign { get; set; }
             public Dictionary<string, string> ModelOtherSettings { get; set; }
             public Dictionary<string, string> ModelLocationSettings { get; set; }
             public Dictionary<string, Dictionary<string, string>> ShortcutPair { get; set; }
-            //uuid int
+            //uuid <list>(sname, svalue)
         }
     }
 }

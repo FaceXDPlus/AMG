@@ -121,7 +121,8 @@ namespace AMG
                     sclass.IsInvert = InvertToggle.isOn;
                     sclass.IsLock = LockToggle.isOn;
                 }
-                UUID = ShortcutController.SetShortcutClass(isPressed, sclass);
+                UUID = System.Guid.NewGuid().ToString();
+                ShortcutController.SetShortcutClass(isPressed, sclass, UUID);
                 item.SetActive(true);
             }
         }

@@ -40,22 +40,30 @@ namespace AMG
             }
         }
 
-        public string SetShortcutClass(List<string> keyPressed, ShortcutClass shortClass)
+        public void SetShortcutClass(List<string> keyPressed, ShortcutClass shortClass, string UUID)
         {
-            keyPressed.Sort(); 
-            string id = System.Guid.NewGuid().ToString();
-            shortClass.UUID = id;
+            keyPressed.Sort();
+            shortClass.UUID = UUID;
             shortClass.ShortcutController = this;
-            if (ShortcutDict.ContainsKey(keyPressed)){
-                ShortcutDict[keyPressed].Add(id, shortClass);
+            /*if (IssetShortcutClass(UUID))
+            {
+                RemoveShortcutClass(UUID);
+
+            }*/
+            var KKeyPressed = IssetShortcutClassKeyPressed(keyPressed);
+            if (KKeyPressed != null){
+                if (ShortcutDict[KKeyPressed].ContainsKey(UUID))
+                {
+                    RemoveShortcutClass(UUID);
+                }
+                ShortcutDict[KKeyPressed].Add(UUID, shortClass);
             }
             else
             {
                 var dict = new Dictionary<string, ShortcutClass>();
-                dict.Add(id, shortClass);
+                dict.Add(UUID, shortClass);
                 ShortcutDict.Add(keyPressed, dict);
             }
-            return id;
         }
 
         public void RemoveShortcutClass(string uuid)
@@ -74,9 +82,36 @@ namespace AMG
             }
         }
 
+        public bool IssetShortcutClass(string uuid)
+        {
+            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
+            {
+                foreach (KeyValuePair<string, ShortcutClass> kkvp in kvp.Value)
+                {
+                    if (uuid == kkvp.Key)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public List<string> IssetShortcutClassKeyPressed(List<string> keyPressed)
+        {
+            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
+            {
+                if (kvp.Key.SequenceEqual(keyPressed))
+                {
+                    return kvp.Key;
+                }
+            }
+            return null;
+        }
+
         public void RemoveShortcutClassByModel(object model)
         {
-            var WaitDict = new Dictionary<List<string>, string>();
+            var WaitDict = new List<string>();
             //清理快捷键
             foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
             {
@@ -84,13 +119,13 @@ namespace AMG
                 {
                     if (kkvp.Value.Model == model)
                     {
-                        WaitDict.Add(kvp.Key, kkvp.Key);
+                        WaitDict.Add(kkvp.Key);
                     }
                 }
             }
-            foreach (KeyValuePair<List<string>, string> kvp in WaitDict)
+            foreach (string kkvp in WaitDict)
             {
-                RemoveShortcutClass(kvp.Value);
+                RemoveShortcutClass(kkvp);
             }
         }
 

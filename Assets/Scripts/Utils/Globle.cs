@@ -10,8 +10,8 @@ namespace AMG
     public class Globle
     {
         public static string APPName = "AMG-RM";
-        public static string APPVersion = "Beta 0.1";
-        public static string APPBuild = "6";
+        public static string APPVersion = "Alpha 0.2";
+        public static string APPBuild = "1";
 
         public static int ModelNum = 1;
 
