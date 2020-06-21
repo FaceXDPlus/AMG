@@ -159,7 +159,7 @@ namespace AMG
             }
             catch (Exception err)
             {
-                Globle.AddDataLog("Main", Globle.LangController.GetLang("LOG.ModelConfigLoadException", err.StackTrace));
+                Globle.AddDataLog("Main", Globle.LangController.GetLang("LOG.ModelConfigLoadException", err.Message));
             }
         }
 

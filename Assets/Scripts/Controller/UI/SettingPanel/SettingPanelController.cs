@@ -47,6 +47,11 @@ namespace AMG
         [SerializeField] private LangController LangController;
         [SerializeField] private ShortcutController ShortcutController;
 
+        //分辨率
+        [SerializeField] public InputField ResolutionRatioX;
+        [SerializeField] public InputField ResolutionRatioY;
+        [SerializeField] private UnityEngine.UI.Button ResolutionRatioButton;
+
         void Start()
         {
             P2PClientName.text = Globle.GetComputerName();
@@ -56,6 +61,7 @@ namespace AMG
             ModelSelectionDropdownBox.ItemPicked += OnModelSelectionDropdownBoxSelected;
             ModelIPDropdownBox.ItemPicked += OnModelIPDropdownBoxSelected;
             P2PClientToggle.onValueChanged.AddListener((bool isOn) => { OnP2PClientToggleClick(isOn); });
+            ResolutionRatioButton.onClick.AddListener(() => { OnResolutionRatioButtonPressed(); });
             var none = new string[1];
             none[0] = "/";
             ModelSelectionDropdownBox.listItems = none;
@@ -283,6 +289,19 @@ namespace AMG
                 {
                     WebSocketHelper.P2PClientStop();
                 }
+            }
+        }
+
+        public void OnResolutionRatioButtonPressed()
+        {
+            if (ResolutionRatioX.text != "" && ResolutionRatioY.text != "")
+            {
+                CanvasController.MainStorage.ResolutionRatioX = Convert.ToInt32(ResolutionRatioX.text);
+                CanvasController.MainStorage.ResolutionRatioY = Convert.ToInt32(ResolutionRatioY.text);
+                //Screen.SetResolution(Convert.ToInt32(ResolutionRatioX.text), Convert.ToInt32(ResolutionRatioY.text), false);
+                CanvasController.GetComponent<DXHelper>().renderTextureHeight = Convert.ToInt32(ResolutionRatioY.text);
+                CanvasController.GetComponent<DXHelper>().renderTextureWidth = Convert.ToInt32(ResolutionRatioX.text);
+                CanvasController.Save();
             }
         }
     }

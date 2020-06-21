@@ -8,9 +8,9 @@ namespace AMG
 	public class CubismBreathController : MonoBehaviour
 	{
 		[SerializeField, Range(0.1f, 20f)]
-		public float inTime = 1.5f;
+		public float inTime = 2f;
 		[SerializeField, Range(0.1f, 20f)]
-		public float outTime = 1.5f;
+		public float outTime = 2f;
 		[SerializeField, Range(0.1f, 20f)]
 		public float offTime = 0.5f;
 

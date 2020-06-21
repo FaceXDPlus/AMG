@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityExtensions;
@@ -19,6 +21,9 @@ namespace AMG
         [SerializeField] private Scrollbar LogScrollbar;
         [SerializeField] private LangController LangController;
         [SerializeField] private MainPanelController MainPanelController;
+        [SerializeField] private SettingPanelController SettingPanelController;
+
+        public static Storage MainStorage;
 
         void Start()
         {
@@ -38,8 +43,57 @@ namespace AMG
             }
 
             Globle.AddDataLog("Main", LangController.GetLang("LOG.SystemLoaded"));
+
+            Application.targetFrameRate = 60;
             //自动启动WebSocket
+            Load();
             MainPanelController.WebSocketToggle.isOn = true;
+            SettingPanelController.ResolutionRatioX.text = MainStorage.ResolutionRatioX.ToString();
+            SettingPanelController.ResolutionRatioY.text = MainStorage.ResolutionRatioY.ToString();
+            GetComponent<DXHelper>().renderTextureHeight = MainStorage.ResolutionRatioY;
+            GetComponent<DXHelper>().renderTextureWidth = MainStorage.ResolutionRatioX;
+        }
+
+        public struct Storage
+        {
+            public int ResolutionRatioX;//Width
+            public int ResolutionRatioY;//Width
+        };
+
+        private void Awake()
+        {
+            Application.targetFrameRate = 60;
+        }
+
+        public void Save()
+        {
+            var serializer = new XmlSerializer(typeof(Storage));
+            var stream = new FileStream(Application.streamingAssetsPath + "/Storage", FileMode.Create);
+
+            using (stream)
+            {
+                serializer.Serialize(stream, MainStorage);
+            }
+        }
+
+        public void Load()
+        {
+            var serializer = new XmlSerializer(typeof(Storage));
+            if (File.Exists(Application.streamingAssetsPath + "/Storage"))
+            {
+                var stream = new FileStream(Application.persistentDataPath + "/Storage", FileMode.Open);
+
+
+                using (stream)
+                {
+                    MainStorage = (Storage)serializer.Deserialize(stream);
+                }
+            }
+            else
+            {
+                MainStorage.ResolutionRatioX = 1280;
+                MainStorage.ResolutionRatioX = 720;
+            }
         }
 
         void Update()
@@ -73,5 +127,9 @@ namespace AMG
             }
         }
 
+        private void OnApplicationQuit()
+        {
+            Save();
+        }
     }
 }

@@ -28,6 +28,9 @@ namespace AMG
         [SerializeField] public Toggle ShortcutToggle;
         [SerializeField] private GameObject ShortcutPanel;
 
+        //DX透明度
+        [SerializeField] public Camera DXCamera;
+        [SerializeField] public DXTransparentHelper DXTransparentHelper;
 
         //USB部分
         [SerializeField] private Toggle USBToggle;
@@ -45,18 +48,43 @@ namespace AMG
 
         #region UI
 
-        public void OnDXWindowToggleClick(Toggle toggle) {
+        public void OnDXWindowToggleClick(Toggle toggle)
+        {
             bool windowOn = dxInterface.ToggleShowWindow(false);
             toggle.isOn = windowOn;
+#if UNITY_STANDALONE_WIN
+            if (windowOn)
+            {
+                DXTransparentHelper.SetMinimized("AMG DX Windows");
+            }
+            else
+            {
+                DXWindowTransparentToggle.isOn = false;
+            }
+#endif
         }
 
         public void OnDXWindowTransparentToggleClick(Toggle toggle)
         {
-            /*if (dxInterface.windowOn)
+
+#if UNITY_STANDALONE_WIN
+            if (dxInterface.windowOn)
             {
-                dxInterface.ToggleShowWindow(false);
-                //Invoke("dxInterface.ToggleShowWindow(false)", 0.25f);
-            }*/
+                if(toggle.isOn)
+                {
+                    DXCamera.backgroundColor = new Color(0,0,0,0);
+                    DXTransparentHelper.SetTransparent("AMG DX Windows", DXTransparentHelper.enumWinStyle.WinTopAphaPenetrate);
+                }
+                else
+                {
+                    toggle.isOn = true;
+                }
+            }
+            else
+            {
+                toggle.isOn = false;
+            }
+#endif
         }
 
         public void OnModelAdvancedToggleClick(bool isOn)
