@@ -109,7 +109,7 @@ namespace AMG
             return null;
         }
 
-        public void RemoveShortcutClassByModel(object model)
+        public void RemoveShortcutClassByModel(GameObject model)
         {
             var WaitDict = new List<string>();
             //清理快捷键

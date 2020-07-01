@@ -17,7 +17,7 @@ namespace AMG
         {
             if (!IsProcessing) {
                 IsProcessing = true;
-                var model = SettingPanelController.GetCubismModelSelected();
+                var model = SettingPanelController.GetModelObjectSelected();
                 if (model != null)
                 {
                     if (model.GetComponent<Live2DModelController>() != null)

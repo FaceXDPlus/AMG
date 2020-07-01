@@ -45,13 +45,14 @@ namespace AMG
             Globle.AddDataLog("Main", LangController.GetLang("LOG.SystemLoaded"));
 
             Application.targetFrameRate = 60;
-            //自动启动WebSocket
+            //自动启动WebSocket和DX
             Load();
-            MainPanelController.WebSocketToggle.isOn = true;
             SettingPanelController.ResolutionRatioX.text = MainStorage.ResolutionRatioX.ToString();
             SettingPanelController.ResolutionRatioY.text = MainStorage.ResolutionRatioY.ToString();
             GetComponent<DXHelper>().renderTextureHeight = MainStorage.ResolutionRatioY;
             GetComponent<DXHelper>().renderTextureWidth = MainStorage.ResolutionRatioX;
+            MainPanelController.WebSocketToggle.isOn = true;
+            MainPanelController.DXWindowToggle.isOn = true;
         }
 
         public struct Storage

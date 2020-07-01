@@ -7,6 +7,14 @@
 		"PARAM_EYE_R_OPEN",
 		"ParamEyeROpen"
 	],
+    "paramEyeLSmile": [
+		"PARAM_EYE_L_SMILE",
+		"ParamEyeLSmile"
+	],
+	"paramEyeRSmile": [
+		"PARAM_EYE_R_SMILE",
+		"ParamEyeRSmile"
+	],
 	"paramAngleX": [
 		"PARAM_ANGLE_X",
 		"ParamAngleX"
@@ -74,5 +82,11 @@
 	"paramBreath": [
 		"PARAM_BREATH",
 		"ParamBreath"
-	]
+	],
+    "paramMouseX": [
+		"ParamMouseX"
+	],
+	"paramMouseY": [
+		"ParamMouseY"
+	],
 }

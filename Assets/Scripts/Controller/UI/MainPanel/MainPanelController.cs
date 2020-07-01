@@ -77,7 +77,8 @@ namespace AMG
                 }
                 else
                 {
-                    toggle.isOn = true;
+                    DXCamera.backgroundColor = new Color(0, 0, 0, 0);
+                    DXTransparentHelper.SetTransparent("AMG DX Windows", DXTransparentHelper.enumWinStyle.WinNone);
                 }
             }
             else

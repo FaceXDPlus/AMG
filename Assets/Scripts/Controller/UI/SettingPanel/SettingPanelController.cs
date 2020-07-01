@@ -32,6 +32,14 @@ namespace AMG
         [SerializeField] private SelectionBoxConfig ModelSelectionDropdownBox;
         [SerializeField] private SelectionBoxConfig ModelIPDropdownBox;
         [SerializeField] private GameObject ModelParent;
+        [SerializeField] private GameObject MouseObject;
+
+
+        //VRM模型数量控制
+        [SerializeField] private UnityEngine.UI.Button VRMModelAddButton;
+        [SerializeField] private UnityEngine.UI.Button VRMModelRefreshButton;
+        [SerializeField] private SelectionBoxConfig VRMModelDropdownBox;
+        [SerializeField] private GameObject VRMModelParent;
 
         //P2P连接
         [SerializeField] private InputField P2PClientField;
@@ -44,6 +52,7 @@ namespace AMG
 
         //其他控制器
         [SerializeField] private Live2DHelper Live2DHelper;
+        [SerializeField] private VRMHelper VRMHelper;
         [SerializeField] private LangController LangController;
         [SerializeField] private ShortcutController ShortcutController;
 
@@ -57,6 +66,10 @@ namespace AMG
             P2PClientName.text = Globle.GetComputerName();
             ModelAddButton.onClick.AddListener(() => { OnModelAddButtonClick(); });
             ModelRefreshButton.onClick.AddListener(() => { OnModelRefreshButtonClick(); });
+            //VRM
+            VRMModelAddButton.onClick.AddListener(() => { OnVRMModelAddButtonClick(); });
+            VRMModelRefreshButton.onClick.AddListener(() => { OnVRMModelRefreshButtonClick(); });
+
             ModelRemoveButton.onClick.AddListener(() => { OnModelRemoveButtonClick(); });
             ModelSelectionDropdownBox.ItemPicked += OnModelSelectionDropdownBoxSelected;
             ModelIPDropdownBox.ItemPicked += OnModelIPDropdownBoxSelected;
@@ -85,11 +98,11 @@ namespace AMG
             return ModelSelectionDropdownBox.selectedText.text;
         }
 
-        public CubismModel GetCubismModelSelected()
+        public GameObject GetModelObjectSelected()
         {
             if (ModelSelectionDropdownBox.selectedText.text != "/")
             {
-                foreach (CubismModel model in Globle.ModelList)
+                foreach (GameObject model in Globle.ModelList)
                 {
                     if (ModelSelectionDropdownBox.selectedText.text == model.name)
                     {
@@ -105,7 +118,18 @@ namespace AMG
             if (id != 0) {
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SelectModel", ModelSelectionDropdownBox.selectedText.text));
                 ModelPanelController.SetValueFromModel();
-                ModelIPDropdownBox.selectedText.text = GetCubismModelSelected().GetComponent<Live2DModelController>().ConnectionUUID;
+                var model = GetModelObjectSelected();
+                if (model != null)
+                {
+                    if (model.GetComponent<Live2DModelController>() != null)
+                    {
+                        ModelIPDropdownBox.selectedText.text = model.GetComponent<Live2DModelController>().ConnectionUUID;
+                    }
+                    else if (model.GetComponent<VRMModelController>() != null)
+                    {
+                        ModelIPDropdownBox.selectedText.text = model.GetComponent<VRMModelController>().ConnectionUUID;
+                    }
+                }
             }
             else
             {
@@ -117,10 +141,17 @@ namespace AMG
 
         public void OnModelIPDropdownBoxSelected(int id)
         {
-            var model = GetCubismModelSelected();
+            var model = GetModelObjectSelected();
             if (model != null)
             {
-                model.GetComponent<Live2DModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
+                if (model.GetComponent<Live2DModelController>() != null)
+                {
+                    model.GetComponent<Live2DModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
+                }
+                else if (model.GetComponent<VRMModelController>() != null)
+                {
+                    model.GetComponent<VRMModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
+                }
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SetModelIP", ModelSelectionDropdownBox.selectedText.text, ModelIPDropdownBox.selectedText.text));
             }
         }
@@ -131,7 +162,19 @@ namespace AMG
             Invoke("AddModel", 0.25f);
         }
 
+        public void OnVRMModelAddButtonClick()
+        {
+            CanvasController.CloseAllDropdown();
+            Invoke("AddVRMModel", 0.25f);
+        }
+
         public void OnModelRefreshButtonClick()
+        {
+            CanvasController.CloseAllDropdown();
+            Invoke("RefreshModels", 0.25f);
+        }
+
+        public void OnVRMModelRefreshButtonClick()
         {
             CanvasController.CloseAllDropdown();
             Invoke("RefreshModels", 0.25f);
@@ -148,17 +191,24 @@ namespace AMG
             var model = Live2DHelper.GetModelFromName(ModelDropdownBox.selectedText.text, ModelParent);
             if (model != null)
             {
-                model.GetComponent<Live2DModelController>().SettingPanelController = this;
+                var controller = model.GetComponent<Live2DModelController>();
+                controller.SettingPanelController = this;
                 var connectionLost = Instantiate(ConnectionLost);
                 connectionLost.transform.SetParent(model.gameObject.transform);
                 connectionLost.transform.localPosition = model.gameObject.transform.localPosition;
                 connectionLost.GetComponent<PNGListHelper>().Init();
-                model.GetComponent<Live2DModelController>().ConnectionLost = connectionLost;
+                controller.ConnectionLost = connectionLost;
+                controller.MouseObject = MouseObject;
                 ResetModelSelectionDropdown();
                 ModelIPDropdownBox.selectedText.text = "/"; 
                 ModelIPDropdownBox.currentSelection = -1; 
                 Invoke("ReloadModelSettings", 0.7f);
             }
+        }
+
+        public void AddVRMModel()
+        {
+            VRMHelper.GetModelFromName(VRMModelDropdownBox.selectedText.text, VRMModelParent, MouseObject);
         }
 
         public void RefreshModels()
@@ -181,17 +231,39 @@ namespace AMG
             {
                 ModelDropdownBox.selectedText.text = "/";
             }
+            //处理VRM
+            var vrmmodels = VRMHelper.GetModelsFromAssets();
+            var vrmreturnCount = vrmmodels.Count;
+            if (vrmreturnCount > 0)
+            {
+                VRMModelDropdownBox.listItems = new string[vrmreturnCount];
+                int i = 0;
+                while (i < vrmreturnCount)
+                {
+                    VRMModelDropdownBox.listItems[i] = vrmmodels[i].ToString();
+                    i++;
+                }
+                VRMModelDropdownBox.selectedText.text = "/";
+                VRMModelDropdownBox.RefreshList();
+            }
+            else
+            {
+                VRMModelDropdownBox.selectedText.text = "/";
+            }
         }
 
         public void RemoveModel()
         {
-            var model = GetCubismModelSelected();
+            var model = GetModelObjectSelected();
             if (model != null)
             {
                 ShortcutController.RemoveShortcutClassByModel(model);
                 Globle.ModelList.Remove(model);
-                UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>().ConnectionLost);
-                UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>());
+                if (model.GetComponent<Live2DModelController>() != null)
+                {
+                    UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>().ConnectionLost);
+                    UnityEngine.Object.Destroy(model.gameObject.GetComponent<Live2DModelController>());
+                }
                 UnityEngine.Object.Destroy(model.gameObject);
                 ResetModelSelectionDropdown();
                 ModelIPDropdownBox.selectedText.text = "/";
@@ -211,7 +283,7 @@ namespace AMG
             int i = 0;
             while (i < list.Count)
             {
-                var model = (CubismModel)list[i];
+                var model = (GameObject)list[i];
                 ModelSelectionDropdownBox.listItems[i + 1] = model.name;
                 i++;
             }

@@ -1,4 +1,5 @@
 ﻿using Live2D.Cubism.Core;
+using NetworkSocket.Validation;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -39,10 +40,53 @@ namespace AMG
 		public float LostResetLastZ = 0;
 		public bool LostResetFlag = false;
 
+		//键盘绑定
+		public bool KeyboardBind = false;
+
 		//版本判断
 		public bool IsNewSDK = false;
 		public bool isTracked = false;
 
+		private Vector3 LastPosition;
+		private Vector3 VelocityBuffer;
+		public float Damping = 0.15f;
+		public GameObject MouseObject;
+		private enum Phase
+		{
+			/// <summary>
+			/// Idle state.
+			/// </summary>
+			Idling,
+
+			/// <summary>
+			/// State when closing eyes.
+			/// </summary>
+			ClosingEyes,
+
+			/// <summary>
+			/// State when opening eyes.
+			/// </summary>
+			OpeningEyes
+		}
+
+		//自动眨眼
+		[SerializeField, Range(1f, 10f)]
+		public float Mean = 2.5f;
+
+		/// <summary>
+		/// Maximum deviation from <see cref="Mean"/> in seconds.
+		/// </summary>
+		[SerializeField, Range(0.5f, 5f)]
+		public float MaximumDeviation = 2f;
+
+		/// <summary>
+		/// Timescale.
+		/// </summary>
+		[SerializeField, Range(1f, 20f)]
+		public float Timescale = 10f;
+		private float T { get; set; }
+		private Phase CurrentPhase { get; set; }
+		private float LastValue { get; set; }
 
 		void Start()
         {
@@ -57,7 +101,7 @@ namespace AMG
 			{
 				if (SettingPanelController != null)
 				{
-					if (SettingPanelController.GetModelSelected() == this.GetComponent<CubismModel>().name)
+					if (SettingPanelController.GetModelSelected() == GetComponent<CubismModel>().name)
 					{
 						ProcessPosition();
 					}
@@ -76,7 +120,11 @@ namespace AMG
 				}
 				//更新模型位置
 				ProcessModelParameter();
-				
+				//更新键盘位置
+				if (KeyboardBind)
+				{
+					ProcesskeyboardParameter();
+				}
 			}
 			catch (Exception err)
 			{
@@ -91,9 +139,10 @@ namespace AMG
 				if (isTracked != true && LostResetFlag == false)
 				{
 					LostResetFlag = true;
-					//ResetModel();
-					SetLostReset(true);
-				}else if (isTracked == true && LostResetFlag == true)
+					SetLostReset(true); 
+					CurrentPhase = Phase.Idling;
+				}
+				else if (isTracked == true && LostResetFlag == true)
 				{
 					LostResetFlag = false;
 					SetLostReset(false);
@@ -186,6 +235,8 @@ namespace AMG
 		{
 			Parameters.Add("paramEyeLOpen", "eyeLOpen");
 			Parameters.Add("paramEyeROpen", "eyeROpen");
+			Parameters.Add("paramEyeLSmile", "eyeLSmile");
+			Parameters.Add("paramEyeRSmile", "eyeRSmile");
 			Parameters.Add("paramAngleX", "headYaw");
 			Parameters.Add("paramAngleY", "headPitch");
 			Parameters.Add("paramAngleZ", "headRoll");
@@ -200,6 +251,8 @@ namespace AMG
 			Parameters.Add("paramMouthOpenY", "mouthOpenY");
 			Parameters.Add("paramMouthForm", "mouthForm");
 			Parameters.Add("paramBreath", "Breath");
+			Parameters.Add("paramMouseX", "paramMouseX");
+			Parameters.Add("paramMouseY", "paramMouseY");
 		}
 
 		public void ProcessPosition()
@@ -261,6 +314,23 @@ namespace AMG
 			}
 		}
 
+		public void ProcesskeyboardParameter()
+		{
+			var targetPosition = MouseObject.transform.position;
+			var GoalPosition = targetPosition - new Vector3(Screen.width / 2, Screen.height / 2, 0);
+			//Debug.Log(GoalPosition.x / Screen.width * 35 + "|" + GoalPosition.y / Screen.height * 35);
+			if (InitedParameters.ContainsKey("paramMouseX"))
+			{
+				var param = (CubismParameter)InitedParameters["paramMouseX"].Parameter;
+				param.Value = GoalPosition.x / Screen.width * 35;
+			}
+			if (InitedParameters.ContainsKey("paramMouseY"))
+			{
+				var param = (CubismParameter)InitedParameters["paramMouseY"].Parameter;
+				param.Value = GoalPosition.y / Screen.height * 35;
+			}
+		}
+
 		void OnMouseDown()
 		{
 			ModelOffset = Camera.main.WorldToScreenPoint(transform.position) - Input.mousePosition;    
@@ -285,12 +355,48 @@ namespace AMG
 
 		public void ResetModel()
 		{
+			var ado = true;
+			if (CurrentPhase == Phase.Idling)
+			{
+				T -= Time.deltaTime;
+
+
+				if (T < 0f)
+				{
+					T = (Mathf.PI * -0.5f);
+					LastValue = 1f;
+					CurrentPhase = Phase.ClosingEyes;
+				}
+				else
+				{
+					ado = false;
+				}
+			}
+
+			if (ado) {
+				T += (Time.deltaTime * Timescale);
+				var value = Mathf.Abs(Mathf.Sin(T));
+
+
+				if (CurrentPhase == Phase.ClosingEyes && value > LastValue)
+				{
+					CurrentPhase = Phase.OpeningEyes;
+				}
+				else if (CurrentPhase == Phase.OpeningEyes && value < LastValue)
+				{
+					value = 1f;
+					CurrentPhase = Phase.Idling;
+					T = Mean + UnityEngine.Random.Range(-MaximumDeviation, MaximumDeviation);
+				}
+				LastValue = value;
+			}
+
 			foreach (KeyValuePair<string, ParametersClass> kvp in InitedParameters)
 			{
 				if (LostResetEye == true && (kvp.Value.Name == "paramEyeLOpen" || kvp.Value.Name == "paramEyeROpen"))
 				{
 					var para = (CubismParameter)kvp.Value.Parameter;
-					para.Value = 1;
+					para.Value = LastValue;
 				}
 				else if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
 				{
@@ -412,6 +518,7 @@ namespace AMG
 			returnDict.Add("LostResetAction", LostResetAction.ToString());
 			returnDict.Add("LostResetMotion", LostResetMotion);
 			returnDict.Add("LostResetMotionLoop", LostResetMotionLoop.ToString());
+			returnDict.Add("KeyboardBind", KeyboardBind.ToString());
 			return returnDict; 
 		}
 
@@ -436,6 +543,10 @@ namespace AMG
 			if (CheckNameInDict("LostResetMotionLoop", otherDict))
 			{
 				LostResetMotionLoop = bool.Parse(otherDict["LostResetMotionLoop"]);
+			}
+			if (CheckNameInDict("KeyboardBind", otherDict))
+			{
+				KeyboardBind = bool.Parse(otherDict["KeyboardBind"]);
 			}
 		}
 

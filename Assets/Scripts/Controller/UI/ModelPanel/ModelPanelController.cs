@@ -14,6 +14,7 @@ namespace AMG
         [SerializeField] private Toggle ModelLostResetToggle;
         [SerializeField] private Toggle ModelLostResetEyeToggle;
         [SerializeField] private Toggle ModelMotionLoopToggle;
+        [SerializeField] private Toggle ModelKeyboardBindToggle;
         [SerializeField] private Slider ModelShowLevelSlider;
         [SerializeField] private SelectionBoxConfig ModelLostResetChooseDropdown;
         [SerializeField] private SelectionBoxConfig ModelLostResetActionDropdown;
@@ -34,6 +35,7 @@ namespace AMG
             ModelLostResetToggle.onValueChanged.AddListener((bool value) => { OnModelLostResetToggleValueChanged(value); });
             ModelLostResetEyeToggle.onValueChanged.AddListener((bool value) => { OnModelLostResetEyeToggleValueChanged(value); });
             ModelMotionLoopToggle.onValueChanged.AddListener((bool value) => { OnModelMotionLoopToggleValueChanged(value); });
+            ModelKeyboardBindToggle.onValueChanged.AddListener((bool value) => { OnModelKeyboardBindToggleValueChanged(value); });
             ModelLostResetChooseDropdown.ItemPicked += OnModelLostResetChooseDropdownSelected;
             ModelLostResetActionDropdown.ItemPicked += OnModelLostResetActionDropdownSelected;
             ModelConfigSaveButton.onClick.AddListener(() => { OnModelConfigSaveButtonClick(); });
@@ -42,7 +44,7 @@ namespace AMG
 
         public void SetValueFromModel()
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -51,6 +53,7 @@ namespace AMG
                     ModelLostResetToggle.isOn = controller.LostReset;
                     ModelLostResetEyeToggle.isOn = controller.LostResetEye;
                     ModelMotionLoopToggle.isOn = controller.LostResetMotionLoop;
+                    ModelKeyboardBindToggle.isOn = controller.KeyboardBind;
                     ModelLostResetChooseDropdown.selectedText.text = ModelLostResetChooseDropdown.listItems[controller.LostResetAction];
                     ModelLostResetActionDropdown.listItems = new string[controller.animationClips.Count];
                     var i = 0;
@@ -68,7 +71,7 @@ namespace AMG
 
         public void OnModelLostResetChooseDropdownSelected(int id)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -81,7 +84,7 @@ namespace AMG
 
         public void OnModelLostResetActionDropdownSelected(int id)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -94,7 +97,7 @@ namespace AMG
 
         public void OnModelConfigSaveButtonClick()
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -129,6 +132,15 @@ namespace AMG
 
                     SaveController.SaveUserData(controller.ModelPath, controller.ConnectionUUID, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), aniDict);
                 }
+                else if (model.GetComponent<VRMModelController>() != null)
+                {
+                    var controller = model.GetComponent<VRMModelController>();
+
+                    //处理快捷键
+                    var aniDict = new Dictionary<string, Dictionary<string, string>>();
+
+                    SaveController.SaveUserData(controller.ModelPath, controller.ConnectionUUID, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), aniDict);
+                }
             }
         }
 
@@ -136,7 +148,7 @@ namespace AMG
         {
             try
             {
-                var model = SettingPanelController.GetCubismModelSelected();
+                var model = SettingPanelController.GetModelObjectSelected();
                 if (model != null)
                 {
                     if (model.GetComponent<Live2DModelController>() != null)
@@ -155,6 +167,22 @@ namespace AMG
                         SettingPanelController.ResetModelAdvancedPanel();
                         SettingPanelController.ResetShortcutPanel();
                     }
+                    else if(model.GetComponent<VRMModelController>() != null)
+                    {
+                        var controller = model.GetComponent<VRMModelController>();
+                        var data = SaveController.LoadUserData(controller.ModelPath);
+                        controller.SetModelSettings(data.ModelAlign);
+                        controller.SetModelOtherSettings(data.ModelOtherSettings);
+                        controller.SetModelLocationSettings(data.ModelLocationSettings);
+                        if (data.LastDUID != null)
+                        {
+                            controller.ConnectionUUID = data.LastDUID;
+                        }
+                        //SetValueToCubismShortcut(data.ShortcutPair, model);
+                        //SetValueFromModel();
+                        SettingPanelController.ResetModelAdvancedPanel();
+                        SettingPanelController.ResetShortcutPanel();
+                    }
                 }
             }
             catch (Exception err)
@@ -165,7 +193,7 @@ namespace AMG
 
         public void OnModelLostResetToggleValueChanged(bool value)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -178,7 +206,7 @@ namespace AMG
 
         public void OnModelLostResetEyeToggleValueChanged(bool value)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -191,7 +219,7 @@ namespace AMG
 
         public void OnModelMotionLoopToggleValueChanged(bool value)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -202,9 +230,23 @@ namespace AMG
             }
         }
 
+        public void OnModelKeyboardBindToggleValueChanged(bool value)
+        {
+            var model = SettingPanelController.GetModelObjectSelected();
+            if (model != null)
+            {
+                if (model.GetComponent<Live2DModelController>() != null)
+                {
+                    var controller = model.GetComponent<Live2DModelController>();
+                    controller.KeyboardBind = value;
+                }
+            }
+        }
+        
+
         public void OnModelShowLevelSliderValueChanged(float value)
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 if (model.GetComponent<Live2DModelController>() != null)
@@ -214,17 +256,18 @@ namespace AMG
             }
         }
 
-        public void SetValueToCubismShortcut(Dictionary<string, Dictionary<string, string>> aniDict, CubismModel model)
+        public void SetValueToCubismShortcut(Dictionary<string, Dictionary<string, string>> aniDict, GameObject model)
         {
             if (model.GetComponent<Live2DModelController>() != null)
             {
                 var controller = model.GetComponent<Live2DModelController>();
+                var cubismmodel = model.FindCubismModel();
                 foreach (KeyValuePair<string, Dictionary<string, string>> kvp in aniDict)
                 {
                     var ani = aniDict[kvp.Key];
                     var isPressed = ani["isCPressed"].Split(',').ToList();
 
-                    if (model.Parameters.FindById(ani["Parameter"]) != null || controller.animationClips.Contains(ani["AnimationClip"]))
+                    if (cubismmodel.Parameters.FindById(ani["Parameter"]) != null || controller.animationClips.Contains(ani["AnimationClip"]))
                     {
                         var item = Instantiate(ShortcutClassObject);
                         item.transform.SetParent(ShortcutClassObjectParent.transform, false);

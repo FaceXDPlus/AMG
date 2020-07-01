@@ -15,7 +15,7 @@ namespace AMG
         public string UUID;
         public string isPressedText;
 
-        public object Model;
+        public GameObject Model;
         public int MType = 0;
         //0 Live2D 1 VRM
         public int Type = 0;
@@ -65,7 +65,7 @@ namespace AMG
 
         public void PlayAnimation()
         {
-            var model = (CubismModel)Model;
+            var model = Model.FindCubismModel();
             if (model.GetComponent<Live2DModelController>() != null)
             {
                 var animation = model.GetComponent<Live2DModelController>().Animation;
@@ -135,7 +135,7 @@ namespace AMG
 
         public void PlayParameter(bool isIncrease)
         {
-            var model = (CubismModel)Model;
+            var model = Model.FindCubismModel();
             //加入FixedUpdate，如果不操作就归0
             if (model.GetComponent<Live2DModelController>() != null)
             {

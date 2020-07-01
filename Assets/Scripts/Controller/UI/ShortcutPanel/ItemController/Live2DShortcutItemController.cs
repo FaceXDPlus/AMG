@@ -24,7 +24,7 @@ namespace AMG
         [SerializeField] private GameObject ShortcutClassObject;
         [SerializeField] private GameObject ShortcutClassObjectParent;
 
-        public CubismModel Model;
+        public GameObject Model;
         public string Name;
         public string UUID = "";
         public bool isAnimation = false;

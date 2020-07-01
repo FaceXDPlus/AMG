@@ -15,7 +15,7 @@ namespace AMG
 
         public void OnEnable()
         {
-            var model = SettingPanelController.GetCubismModelSelected();
+            var model = SettingPanelController.GetModelObjectSelected();
             if (model != null)
             {
                 var aniDict = new Dictionary<string, ShortcutClass>();
@@ -39,6 +39,7 @@ namespace AMG
                 if (model.GetComponent<Live2DModelController>() != null)
                 {
                     var controller = model.GetComponent<Live2DModelController>();
+                    var cubismmodel = model.FindCubismModel();
                     foreach (string name in controller.animationClips)
                     {
                         var item = Instantiate(ShortcutObject);
@@ -62,7 +63,7 @@ namespace AMG
                         Objects.Add(item);
                     }
 
-                    foreach (CubismParameter param in model.Parameters)
+                    foreach (CubismParameter param in cubismmodel.Parameters)
                     {
                         if (!controller.AInitedParameters.Contains(param))
                         {

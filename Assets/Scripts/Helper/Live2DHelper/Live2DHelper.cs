@@ -26,7 +26,6 @@ namespace AMG
 
         public CubismModel GetModelFromName(string name, GameObject parent)
         {
-
             try
             {
                 string ModelPath = Application.streamingAssetsPath + "/live2d/" + name + ".model3.json";
@@ -108,7 +107,7 @@ namespace AMG
                     //+1
                     model.name = model.name + "(" + Globle.ModelNum.ToString() + ")";
                     Globle.ModelNum++; 
-                    Globle.ModelList.Add(model);
+                    Globle.ModelList.Add(model.gameObject);
 
                     var modelController = model.gameObject.AddComponent<Live2DModelController>();
                     modelController.DisplayName = model.name;
