@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using UnityEngine;
 
@@ -156,7 +157,7 @@ namespace AMG
 					if (LostResetFlag == false && aa.Value != 0)
 					{
 						LostResetFlag = true;
-						ResetModel();
+						ResetModel(true);
 						SetLostReset(true);
 					}
 					else if (aa.Value != LostResetLastZ && LostResetFlag == true)
@@ -301,7 +302,7 @@ namespace AMG
 				{
 					if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
 					{
-						setParameter((CubismParameter)kvp.Value.Parameter, kvp.Value.NowValue, kvp.Value.MinValue, kvp.Value.MaxValue, kvp.Value.MinSetValue, kvp.Value.MaxSetValue);
+						setParameter((CubismParameter)kvp.Value.Parameter, kvp.Value);
 					}
 				}
 			}
@@ -309,7 +310,11 @@ namespace AMG
 			{
 				if (LostReset == true)
 				{
-					ResetModel();
+					ResetModel(true);
+				}
+				else
+				{
+					ResetModel(false);
 				}
 			}
 		}
@@ -322,12 +327,18 @@ namespace AMG
 			if (InitedParameters.ContainsKey("paramMouseX"))
 			{
 				var param = (CubismParameter)InitedParameters["paramMouseX"].Parameter;
-				param.Value = GoalPosition.x / Screen.width * 35;
+				if (param != null)
+				{
+					param.Value = GoalPosition.x / Screen.width * 35;
+				}
 			}
 			if (InitedParameters.ContainsKey("paramMouseY"))
 			{
 				var param = (CubismParameter)InitedParameters["paramMouseY"].Parameter;
-				param.Value = GoalPosition.y / Screen.height * 35;
+				if (param != null)
+				{
+					param.Value = GoalPosition.y / Screen.height * 35;
+				}
 			}
 		}
 
@@ -353,7 +364,7 @@ namespace AMG
 			ConnectionLost.transform.position = new Vector3(cc.x, cc.y, ConnectionLost.transform.position.z);
 		}
 
-		public void ResetModel()
+		public void ResetModel(bool isFull)
 		{
 			var ado = true;
 			if (CurrentPhase == Phase.Idling)
@@ -398,7 +409,7 @@ namespace AMG
 					var para = (CubismParameter)kvp.Value.Parameter;
 					para.Value = LastValue;
 				}
-				else if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
+				else if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath" && isFull)
 				{
 					var para = (CubismParameter)kvp.Value.Parameter;
 					para.Value = 0;
@@ -457,15 +468,43 @@ namespace AMG
 					AInitedParameters.Add(para);
 					paraC.MinValue = para.MinimumValue;
 					paraC.MinSetValue = para.MinimumValue;
+					paraC.MinParamValue = para.MinimumValue;
 					paraC.MaxValue = para.MaximumValue;
 					paraC.MaxSetValue = para.MaximumValue;
+					paraC.MaxParamValue = para.MaximumValue;
 				}
 				paraC.SDKName = kvp.Value;
 				InitedParameters.Add(kvp.Key, paraC);
 			}
 		}
 
-		public void setParameter(CubismParameter param, float value, float MinValue, float MaxValue, float MinSetValue, float MaxSetValue)
+		public void setParameter(CubismParameter param, ParametersClass kvp)
+		{
+			if (param != null)
+			{
+				var get = (kvp.MaxValue - kvp.MinValue) * (kvp.NowValue - kvp.MinSetValue) / (kvp.MaxSetValue - kvp.MinSetValue) + kvp.MinValue;
+				if (kvp.NowValue <= kvp.MinSetValue)
+				{
+					get = kvp.MinValue;
+				}
+				else if(kvp.NowValue >= kvp.MaxSetValue)
+				{
+					get = kvp.MaxValue;
+				}
+				if (get > kvp.MaxParamValue)
+				{
+					get = kvp.MaxParamValue;
+				}
+				else if (get < kvp.MinParamValue)
+				{
+					get = kvp.MinParamValue;
+				}
+				var smooth = Mathf.SmoothStep(param.Value, get, kvp.SmoothValue);
+				param.Value = smooth;
+			}
+		}
+
+		public void setRawParameter(CubismParameter param, float value, float MinValue, float MaxValue, float MinSetValue, float MaxSetValue)
 		{
 			if (param != null)
 			{
@@ -474,7 +513,7 @@ namespace AMG
 				{
 					get = MinValue;
 				}
-				else if(value >= MaxSetValue)
+				else if (value >= MaxSetValue)
 				{
 					get = MaxValue;
 				}
@@ -490,7 +529,7 @@ namespace AMG
 			{
 				if (kvp.Value.Parameter != null && kvp.Value.Name != "paramBreath")
 				{
-					returnDict.Add(kvp.Value.Name, kvp.Value.MinSetValue.ToString() + "|" + kvp.Value.MaxSetValue.ToString());
+					returnDict.Add(kvp.Value.Name, kvp.Value.MinSetValue.ToString() + "|" + kvp.Value.MaxSetValue.ToString() + "|" + kvp.Value.MinParamValue.ToString() + "|" + kvp.Value.MaxParamValue.ToString() + "|" + kvp.Value.SmoothValue.ToString());
 				}
 			}
 			return returnDict;
@@ -506,6 +545,12 @@ namespace AMG
 					var splitA = text.Split('|');
 					kvp.Value.MinSetValue = float.Parse(splitA[0]);
 					kvp.Value.MaxSetValue = float.Parse(splitA[1]);
+					if (splitA.Count() > 2)
+					{
+						kvp.Value.MinParamValue = float.Parse(splitA[2]);
+						kvp.Value.MaxParamValue = float.Parse(splitA[3]);
+						kvp.Value.SmoothValue = float.Parse(splitA[4]);
+					}
 				}
 			}
 		}

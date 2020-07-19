@@ -141,20 +141,6 @@ namespace AMG
             return true;
         }
 
-        private void LateUpdate()
-        {
-            foreach (KeyValuePair<List<string>, Dictionary<string, ShortcutClass>> kvp in ShortcutDict)
-            {
-                if (GetContains(kvp.Key))
-                {
-                    foreach (KeyValuePair<string, ShortcutClass> kkvp in ShortcutDict[kvp.Key])
-                    {
-                        kkvp.Value.Play();
-                    }
-                }
-            }
-        }
-
         private void OnApplicationQuit()
         {
 #if UNITY_STANDALONE_WIN

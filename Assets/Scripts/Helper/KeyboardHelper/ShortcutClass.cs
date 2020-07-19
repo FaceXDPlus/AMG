@@ -30,38 +30,13 @@ namespace AMG
         public bool IsLoopRun = false;
         public bool LoopLock = false;
         public float fps = 60;
+        public float LastValue = 0;
         public bool InProgress = false;
+        public bool InParamProgress = false;
         public bool InProgressIncrease = true;
 
         public List<string> isCPressed;
         public ShortcutController ShortcutController;
-
-        public void Play()
-        {
-            switch(MType) {
-                case 0:
-                    switch (Type)
-                    {
-                        case 0:
-                            PlayAnimation();
-                            break;
-                        case 1:
-                            if (!IsLock)
-                            {
-                                PlayParameter(!IsInvert);
-                            }
-                            else if (IsLock && !InProgress)
-                            {
-                                InProgress = true;
-                            }
-                            break;
-                    }
-                    break;
-                case 1:
-                    //VRM
-                    break;
-            }
-        }
 
         public void PlayAnimation()
         {
@@ -105,24 +80,38 @@ namespace AMG
 
         private void LateUpdate()
         {
+            var isPressed = ShortcutController.GetContains(isCPressed);
             switch (MType)
             {
                 case 0:
                     switch (Type)
                     {
                         case 0:
+                            if (isPressed)
+                            {
+                                PlayAnimation();
+                            }
                             break;
                         case 1:
                             if (!IsLock)
                             {
-                                if (!ShortcutController.GetContains(isCPressed))
+                                if (isPressed)
                                 {
-                                    PlayParameter(IsInvert);
+                                    InParamProgress = true;
+                                    PlayParameter(!IsInvert, isPressed);
+                                }
+                                else
+                                {
+                                    PlayParameter(IsInvert, isPressed);
                                 }
                             }
                             else if (IsLock && InProgress)
                             {
-                                PlayParameter(InProgressIncrease);
+                                PlayParameter(InProgressIncrease, isPressed);
+                            }
+                            else if (IsLock && !InProgress && isPressed)
+                            {
+                                InProgress = true;
                             }
                             break;
                     }
@@ -133,7 +122,7 @@ namespace AMG
             }
         }
 
-        public void PlayParameter(bool isIncrease)
+        public void PlayParameter(bool isIncrease, bool isPressed)
         {
             var model = Model.FindCubismModel();
             //加入FixedUpdate，如果不操作就归0
@@ -143,13 +132,17 @@ namespace AMG
                 if (paraC != null)
                 {
                     var get = (paraC.MaximumValue - paraC.MinimumValue) / fps;
-                    var now = 0f;
+                    var now = paraC.Value;
+                    var isDone = false;
                     if (isIncrease)
                     {
                         if (paraC.Value < paraC.MaximumValue)
                         {
                             now = paraC.Value + get;
-                            model.GetComponent<Live2DModelController>().setParameter(paraC, now, paraC.MinimumValue, paraC.MaximumValue, paraC.MinimumValue, paraC.MaximumValue);
+                        }
+                        else
+                        {
+                            isDone = true;
                         }
                     }
                     else
@@ -157,11 +150,23 @@ namespace AMG
                         if (paraC.Value > paraC.MinimumValue)
                         {
                             now = paraC.Value - get;
-                            model.GetComponent<Live2DModelController>().setParameter(paraC, now, paraC.MinimumValue, paraC.MaximumValue, paraC.MinimumValue, paraC.MaximumValue);
+                        }
+                        else
+                        {
+                            isDone = true;
+                        }
+                    }
+                    if (InParamProgress)
+                    {
+                        paraC.Value = now;
+                        if (isDone && !isPressed)
+                        {
+                            InParamProgress = false;
                         }
                     }
                     if (IsLock && InProgress)
                     {
+                        paraC.Value = now;
                         if (now >= paraC.MaximumValue)
                         {
                             InProgress = false;

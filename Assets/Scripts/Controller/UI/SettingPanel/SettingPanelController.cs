@@ -19,7 +19,7 @@ namespace AMG
         //其他面板对象
         [SerializeField] private ModelPanelController ModelPanelController;
         [SerializeField] private ModelAdvancedController ModelAdvancedController;
-        [SerializeField] private ShortcutPanelController ShortcutPanelController;
+        [SerializeField] private NewShortcutPanelController NewShortcutPanelController;
 
         //DX控制器
         [SerializeField] private DXHelper dxInterface;
@@ -301,8 +301,8 @@ namespace AMG
 
         public void ResetShortcutPanel()
         {
-            ShortcutPanelController.OnDisable();
-            ShortcutPanelController.gameObject.SetActive(false);
+            NewShortcutPanelController.OnDisable();
+            NewShortcutPanelController.gameObject.SetActive(false);
             MainPanelController.ShortcutToggle.isOn = false;
         }
 

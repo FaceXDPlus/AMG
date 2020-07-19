@@ -38,17 +38,34 @@ namespace AMG
                                     increase = 50;
                                 }
                                 //最小值
-                                controller.MinSlider.minValue = kvp.Value.MinValue - increase;
-                                controller.MinSlider.maxValue = kvp.Value.MaxValue + increase;
-                                controller.MinSlider.value = kvp.Value.MinSetValue;
+                                controller.TMinSlider.minValue = kvp.Value.MinValue - increase;
+                                controller.TMinSlider.maxValue = kvp.Value.MaxValue + increase;
+                                controller.TMinSlider.value = kvp.Value.MinSetValue;
+
+                                controller.MMinSlider.minValue = kvp.Value.MinValue;
+                                controller.MMinSlider.maxValue = kvp.Value.MaxValue;
+                                controller.MMinSlider.value = kvp.Value.MinParamValue;
                                 //最大值
-                                controller.MaxSlider.minValue = kvp.Value.MinValue - increase;
-                                controller.MaxSlider.maxValue = kvp.Value.MaxValue + increase;
-                                controller.MaxSlider.value = kvp.Value.MaxSetValue;
+                                controller.TMaxSlider.minValue = kvp.Value.MinValue - increase;
+                                controller.TMaxSlider.maxValue = kvp.Value.MaxValue + increase;
+                                controller.TMaxSlider.value = kvp.Value.MaxSetValue;
+
+                                controller.MMaxSlider.minValue = kvp.Value.MinValue;
+                                controller.MMaxSlider.maxValue = kvp.Value.MaxValue;
+                                controller.MMaxSlider.value = kvp.Value.MaxParamValue;
+
                                 //当前值
-                                controller.NowSlider.value = kvp.Value.NowValue;
-                                controller.NowSlider.minValue = kvp.Value.MinValue - increase;
-                                controller.NowSlider.maxValue = kvp.Value.MaxValue + increase;
+                                controller.TNowSlider.value = kvp.Value.NowValue;
+
+                                controller.MNowSlider.value = kvp.Value.NowValue;
+
+                                controller.TNowSlider.minValue = kvp.Value.MinValue - increase;
+                                controller.TNowSlider.maxValue = kvp.Value.MaxValue + increase;
+
+                                controller.MNowSlider.minValue = kvp.Value.MinValue;
+                                controller.MNowSlider.maxValue = kvp.Value.MaxValue;
+
+                                controller.SSlider.value = kvp.Value.SmoothValue;
                                 controller.parametersClass = kvp.Value;
                                 Objects.Add(advancedObject);
                             }

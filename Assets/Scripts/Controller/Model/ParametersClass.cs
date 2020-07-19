@@ -16,8 +16,11 @@ namespace AMG
         public float NowValue = 0;
         public float MinValue = 0;
         public float MinSetValue = 0;
+        public float MinParamValue = 0;
         public float MaxValue = 0;
         public float MaxSetValue = 0;
+        public float MaxParamValue = 0;
+        public float SmoothValue = 0.5f;
     }
 
 }

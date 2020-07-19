@@ -26,7 +26,8 @@ namespace AMG
 
         //快捷键窗口部分
         [SerializeField] public Toggle ShortcutToggle;
-        [SerializeField] private GameObject ShortcutPanel;
+        //[SerializeField] private GameObject ShortcutPanel;
+        [SerializeField] private GameObject NewShortcutPanel;
 
         //DX透明度
         [SerializeField] public Camera DXCamera;
@@ -120,7 +121,7 @@ namespace AMG
 
         public void OnShortcutToggleClick(bool isOn)
         {
-            ShortcutPanel.SetActive(isOn);
+            NewShortcutPanel.SetActive(isOn);
         }
 
         #endregion
