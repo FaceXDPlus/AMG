@@ -36,6 +36,10 @@ namespace AMG
         //USB部分
         [SerializeField] private Toggle USBToggle;
 
+        //弹幕系统
+        [SerializeField] private Toggle ChatToggle;
+        [SerializeField] private GameObject ChatPanel;
+
 
         void Start()
         {
@@ -45,6 +49,7 @@ namespace AMG
             WebSocketToggle.onValueChanged.AddListener((bool isOn) => { OnWebSocketToggleClick(isOn); });
             USBToggle.onValueChanged.AddListener((bool isOn) => { OnUSBToggleClick(isOn); });
             ShortcutToggle.onValueChanged.AddListener((bool isOn) => { OnShortcutToggleClick(isOn); });
+            ChatToggle.onValueChanged.AddListener((bool isOn) => { OnChatToggleClick(isOn); });
         }
 
         #region UI
@@ -116,6 +121,11 @@ namespace AMG
             {
                 WebSocketHelper.USBClientStop();
             }
+        }
+
+        public void OnChatToggleClick(bool isOn)
+        {
+            ChatPanel.SetActive(isOn);
         }
 
 

@@ -32,8 +32,8 @@ namespace AMG
                                 advancedObject.SetActive(true);
                                 var controller = advancedObject.GetComponent<ModelAdvancedItemController>();
                                 controller.ParameterName.text = kvp.Value.Name;
-                                var increase = 2f;
-                                if (kvp.Value.MaxValue > 1)
+                                var increase = 1f;
+                                if (kvp.Value.MaxValue > 5)
                                 {
                                     increase = 50;
                                 }

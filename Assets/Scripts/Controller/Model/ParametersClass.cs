@@ -14,6 +14,7 @@ namespace AMG
         public string SDKName = "None";
         public object Parameter = null;
         public float NowValue = 0;
+        public float ParametersValue = 0;
         public float MinValue = 0;
         public float MinSetValue = 0;
         public float MinParamValue = 0;

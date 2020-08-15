@@ -82,7 +82,7 @@ namespace AMG
             var serializer = new XmlSerializer(typeof(Storage));
             if (File.Exists(Application.streamingAssetsPath + "/Storage"))
             {
-                var stream = new FileStream(Application.persistentDataPath + "/Storage", FileMode.Open);
+                var stream = new FileStream(Application.streamingAssetsPath + "/Storage", FileMode.Open);
 
 
                 using (stream)

@@ -454,7 +454,7 @@ namespace AMG
 
 		public void GetParameters()
 		{
-			var jsonDataPath = Application.streamingAssetsPath + "/Parameters.json";
+			var jsonDataPath = Application.streamingAssetsPath + "../../../Data/Parameters.json";
 			JObject jsonParams = Live2DParametersController.getParametersJson(jsonDataPath);
 			var model = GetComponent<CubismModel>();
 			foreach (KeyValuePair<string, string> kvp in Parameters)
@@ -501,9 +501,11 @@ namespace AMG
 				}
 				var smooth = Mathf.SmoothStep(param.Value, get, kvp.SmoothValue);
 				param.Value = smooth;
+				kvp.ParametersValue = smooth;
 			}
 		}
 
+		//Todo 更新class
 		public void setRawParameter(CubismParameter param, float value, float MinValue, float MaxValue, float MinSetValue, float MaxSetValue)
 		{
 			if (param != null)

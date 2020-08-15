@@ -107,8 +107,8 @@ namespace AMG
 				{
 					transform.Rotate(+0.5f, 0, 0, Space.Self);
 				}
-				var Scale = Input.GetAxis("Mouse ScrollWheel") * 60f;
-				this.GetComponent<VRMMeta>().gameObject.transform.localScale += new Vector3(Scale, Scale, Scale);
+				var Scale = Input.GetAxis("Mouse ScrollWheel") * 1f;
+				this.GetComponent<VRMMeta>().gameObject.transform.localPosition += new Vector3(0, 0, Scale);
 			}
 			/*if (Input.GetKey(KeyCode.LeftControl))
 			{
@@ -173,7 +173,7 @@ namespace AMG
 				axis.x = -axis.x;
 				axis.z = -axis.z;
 				head.localRotation = Quaternion.AngleAxis(angle, axis);*/
-				var xx = Convert.ToDouble(float.Parse(jsonResult["headPitch"].ToString()) / 1.3 / - (180 / 3.14));
+				/*var xx = Convert.ToDouble(float.Parse(jsonResult["headPitch"].ToString()) / 1.3 / - (180 / 3.14));
 				var yy = Convert.ToDouble(float.Parse(jsonResult["headYaw"].ToString()) / (180 / 3.14));
 				var zz = Convert.ToDouble((float.Parse(jsonResult["headRoll"].ToString()) - 90) /  - (180 / 3.14));
 
@@ -188,7 +188,13 @@ namespace AMG
 				axis.x = -axis.x;
 				axis.y = -axis.y;
 				angle = -angle;
-				GetComponent<VRMLookAtHead>().Head.localRotation = rotation;
+				GetComponent<VRMLookAtHead>().Head.localRotation = rotation;*/
+				//float.Parse(jsonResult["transforms"]["face.eulerAngles"][0].ToString()) * 20F
+				//var aul = new Vector3(float.Parse(jsonResult["transforms"]["face.eulerAngles"][0].ToString()) * 20F, 0f , 0f);
+				//var aul = new Vector3(0f, - float.Parse(jsonResult["transforms"]["face.eulerAngles"][1].ToString()) * 20F, 0f);
+				//var aul = new Vector3(0f, 0f, - float.Parse(jsonResult["transforms"]["face.eulerAngles"][2].ToString()) * 20F);
+				var aul = new Vector3(float.Parse(jsonResult["transforms"]["face.eulerAngles"][0].ToString()) * 20F, - float.Parse(jsonResult["transforms"]["face.eulerAngles"][1].ToString()) * 20F, - float.Parse(jsonResult["transforms"]["face.eulerAngles"][2].ToString()) * 20F);
+				GetComponent<VRMLookAtHead>().Head.localEulerAngles = aul;
 
 				if (jsonResult.ContainsKey("blendShapes"))
 				{
@@ -202,7 +208,7 @@ namespace AMG
 				}
 			}
 			catch (Exception err){
-				Debug.Log(err.StackTrace);
+				Debug.Log(err.Message + err.StackTrace);
 
 			}
 		}
@@ -299,7 +305,7 @@ namespace AMG
 			var returnDict = new Dictionary<string, string>();
 			returnDict.Add("transformXValue", transform.position.x.ToString());
 			returnDict.Add("transformYValue", transform.position.y.ToString());
-			returnDict.Add("transformSValue", transform.localScale.x.ToString());
+			returnDict.Add("transformZValue", transform.position.z.ToString());
 			returnDict.Add("transformRXValue", transform.localEulerAngles.x.ToString());
 			returnDict.Add("transformRYValue", transform.localEulerAngles.y.ToString());
 			returnDict.Add("transformRZValue", transform.localEulerAngles.z.ToString());
@@ -311,13 +317,9 @@ namespace AMG
 
 		public void SetModelLocationSettings(Dictionary<string, string> locationInfo)
 		{
-			if (CheckNameInDict("transformXValue", locationInfo) && CheckNameInDict("transformYValue", locationInfo))
+			if (CheckNameInDict("transformXValue", locationInfo) && CheckNameInDict("transformYValue", locationInfo) && CheckNameInDict("transformZValue", locationInfo))
 			{
-				transform.position = new Vector3(Convert.ToSingle(locationInfo["transformXValue"]), Convert.ToSingle(locationInfo["transformYValue"]), transform.position.z);
-			}
-			if (CheckNameInDict("transformSValue", locationInfo))
-			{
-				transform.localScale = new Vector3(Convert.ToSingle(locationInfo["transformSValue"]), Convert.ToSingle(locationInfo["transformSValue"]), Convert.ToSingle(locationInfo["transformSValue"]));
+				transform.position = new Vector3(Convert.ToSingle(locationInfo["transformXValue"]), Convert.ToSingle(locationInfo["transformYValue"]), Convert.ToSingle(locationInfo["transformZValue"]));
 			}
 			if (CheckNameInDict("transformRXValue", locationInfo) && CheckNameInDict("transformRYValue", locationInfo) && CheckNameInDict("transformRZValue", locationInfo))
 			{

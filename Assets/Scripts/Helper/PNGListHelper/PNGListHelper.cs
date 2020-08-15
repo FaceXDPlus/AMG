@@ -13,7 +13,7 @@ namespace AMG
         private float time;
         public void Init()
         {
-            string path = Application.streamingAssetsPath + "/gif/ConnectionLost/";
+            string path = Application.streamingAssetsPath + "../../../Data/gif/ConnectionLost/";
             if (Directory.Exists(path))
             {
                 DirectoryInfo direction = new DirectoryInfo(path);

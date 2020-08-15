@@ -15,7 +15,7 @@ namespace AMG
         public ArrayList GetModelsFromAssets()
         {
             ArrayList returnArray = new ArrayList();
-            string streamingAssetsPath = Application.streamingAssetsPath + "/vrm";
+            string streamingAssetsPath = Application.streamingAssetsPath + "../../../Data/vrm";
             DirectoryInfo dir = new DirectoryInfo(streamingAssetsPath);
             foreach (FileInfo file in dir.GetFiles("*.vrm", SearchOption.AllDirectories))
             {
@@ -28,7 +28,7 @@ namespace AMG
         {
             try
             {
-                string ModelPath = Application.streamingAssetsPath + "/vrm/" + name + ".vrm";
+                string ModelPath = Application.streamingAssetsPath + "../../../Data/vrm/" + name + ".vrm";
                 if (System.IO.File.Exists(ModelPath))
                 {
                     var bytes = File.ReadAllBytes(ModelPath);

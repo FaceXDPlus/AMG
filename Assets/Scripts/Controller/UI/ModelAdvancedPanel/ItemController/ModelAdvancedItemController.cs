@@ -34,7 +34,7 @@ namespace AMG
         private void Update()
         {
             TNowSlider.value = parametersClass.NowValue;
-            MNowSlider.value = parametersClass.NowValue;
+            MNowSlider.value = parametersClass.ParametersValue;
         }
 
         private void OnTMinSliderValueChanged(float value)

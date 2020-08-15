@@ -11,7 +11,7 @@ namespace AMG
     {
         public static string APPName = "AMG-RM";
         public static string APPVersion = "Alpha 0.2";
-        public static string APPBuild = "11";
+        public static string APPBuild = "13";
 
         public static int ModelNum = 1;
 

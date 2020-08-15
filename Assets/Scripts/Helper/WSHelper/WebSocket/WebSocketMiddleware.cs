@@ -14,6 +14,7 @@ namespace AMG
             var text = Encoding.UTF8.GetString(frame.Content);
             //var ip = ((System.Net.IPEndPoint)context.Session.RemoteEndPoint).Address.ToString();
             var ip = context.Session.RemoteEndPoint.ToString();
+            //Debug.Log(text);
             try {
                 var jsonResult = (Newtonsoft.Json.Linq.JObject)Newtonsoft.Json.JsonConvert.DeserializeObject(text);
                 var uuid = jsonResult["uuid"].ToString();
