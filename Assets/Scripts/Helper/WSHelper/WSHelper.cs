@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,12 +16,15 @@ namespace AMG
         [SerializeField] private Toggle SocketSwitch;
         [SerializeField] private Toggle P2PClientSwitch;
         [SerializeField] private Toggle USBClientSwitch;
+        [SerializeField] private Toggle DanmakuClientSwitch;
 
         private NetworkSocket.TcpListener listener;
         private WebSocketClient P2Pclient;
         private WebSocketClient USBclient;
+        private WebSocketClient Danmakuclient;
         public bool P2PClientStatus = false;
         public bool USBClientStatus = false;
+        public bool DanmakuClientStatus = false;
 
         public void SocketStart()
         {
@@ -149,6 +154,59 @@ namespace AMG
                 Globle.WSClients.Remove(aa);
             }
             Globle.WSClientsChanged = true;
+        }
+
+        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        {
+            return true; //总是接受
+        }
+
+        public async void DanmakuClientStart()
+        {
+            try
+            {
+                Globle.AddDataLog("USB", Globle.LangController.GetLang("LOG.DanmakuClientStarting"));
+
+                var uri = new Uri("wss://danmaku.loli.ren/chat");
+                Danmakuclient = new DanmakuWebsocketClient(uri, CheckValidationResult);
+
+                var addresses = System.Net.Dns.GetHostAddresses(uri.Host);
+                if (addresses.Length == 0)
+                {
+                    throw new ArgumentException(
+                        Globle.LangController.GetLang("LOG.DanmakuClientIPFailed"),
+                        ""
+                    );
+                }
+                await Danmakuclient.ConnectAsync(addresses[0], uri.Port);
+                if (Danmakuclient.IsConnected)
+                {
+                    DanmakuClientStatus = true;
+                    Globle.AddDataLog("Danmaku", Globle.LangController.GetLang("LOG.USBClientStarted"));
+                    Danmakuclient.SendText("{\"cmd\":1,\"data\":{ \"roomId\":35119946,\"version\":\"0.2.2\", \"config\":{ \"autoTranslate\":false}}}");
+                }
+                else
+                {
+                    DanmakuClientSwitch.isOn = false;
+                    Globle.AddDataLog("Danmaku", Globle.LangController.GetLang("LOG.DanmakuClientStartedFailed"));
+                }
+            }
+            catch (Exception ex)
+            {
+                DanmakuClientSwitch.isOn = false;
+                Globle.AddDataLog("Danmaku", Globle.LangController.GetLang("LOG.DanmakuClientException", ex.Message));
+            }
+        }
+
+        public void DanmakuClientStop()
+        {
+            if (Danmakuclient != null)
+            {
+                DanmakuClientStatus = false;
+                Danmakuclient.Close();
+                Danmakuclient.Dispose();
+            }
+            Globle.AddDataLog("Danmaku", Globle.LangController.GetLang("LOG.DanmakuClientStopped"));
         }
 
         public async void USBClientStart()

@@ -241,6 +241,8 @@ namespace AMG
 			Parameters.Add("paramAngleX", "headYaw");
 			Parameters.Add("paramAngleY", "headPitch");
 			Parameters.Add("paramAngleZ", "headRoll");
+			Parameters.Add("paramBodyAngleY", "bodyAngleY");
+			Parameters.Add("paramBodyAngleZ", "bodyAngleZ");
 			Parameters.Add("paramEyeBallX", "eyeX");
 			Parameters.Add("paramEyeBallY", "eyeY");
 			Parameters.Add("paramBrowLForm", "eyeBrowLForm");
@@ -251,6 +253,7 @@ namespace AMG
 			Parameters.Add("paramBrowRY", "eyeBrowYR");
 			Parameters.Add("paramMouthOpenY", "mouthOpenY");
 			Parameters.Add("paramMouthForm", "mouthForm");
+			Parameters.Add("paramMouthU", "mouthU");
 			Parameters.Add("paramBreath", "Breath");
 			Parameters.Add("paramMouseX", "paramMouseX");
 			Parameters.Add("paramMouseY", "paramMouseY");
