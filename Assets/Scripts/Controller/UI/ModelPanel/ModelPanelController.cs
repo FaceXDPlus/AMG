@@ -132,15 +132,6 @@ namespace AMG
 
                     SaveController.SaveUserData(controller.ModelPath, controller.ConnectionUUID, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), aniDict);
                 }
-                else if (model.GetComponent<VRMModelController>() != null)
-                {
-                    var controller = model.GetComponent<VRMModelController>();
-
-                    //处理快捷键
-                    var aniDict = new Dictionary<string, Dictionary<string, string>>();
-
-                    SaveController.SaveUserData(controller.ModelPath, controller.ConnectionUUID, controller.GetModelSettings(), controller.GetModelOtherSettings(), controller.GetModelLocationSettings(), aniDict);
-                }
             }
         }
 
@@ -164,22 +155,6 @@ namespace AMG
                         }
                         SetValueToCubismShortcut(data.ShortcutPair, model);
                         SetValueFromModel();
-                        SettingPanelController.ResetModelAdvancedPanel();
-                        SettingPanelController.ResetShortcutPanel();
-                    }
-                    else if(model.GetComponent<VRMModelController>() != null)
-                    {
-                        var controller = model.GetComponent<VRMModelController>();
-                        var data = SaveController.LoadUserData(controller.ModelPath);
-                        controller.SetModelSettings(data.ModelAlign);
-                        controller.SetModelOtherSettings(data.ModelOtherSettings);
-                        controller.SetModelLocationSettings(data.ModelLocationSettings);
-                        if (data.LastDUID != null)
-                        {
-                            controller.ConnectionUUID = data.LastDUID;
-                        }
-                        //SetValueToCubismShortcut(data.ShortcutPair, model);
-                        //SetValueFromModel();
                         SettingPanelController.ResetModelAdvancedPanel();
                         SettingPanelController.ResetShortcutPanel();
                     }

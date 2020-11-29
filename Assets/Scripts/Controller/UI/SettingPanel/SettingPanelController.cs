@@ -34,13 +34,6 @@ namespace AMG
         [SerializeField] private GameObject ModelParent;
         [SerializeField] private GameObject MouseObject;
 
-
-        //VRM模型数量控制
-        [SerializeField] private UnityEngine.UI.Button VRMModelAddButton;
-        [SerializeField] private UnityEngine.UI.Button VRMModelRefreshButton;
-        [SerializeField] private SelectionBoxConfig VRMModelDropdownBox;
-        [SerializeField] private GameObject VRMModelParent;
-
         //P2P连接
         [SerializeField] private InputField P2PClientField;
         [SerializeField] private UnityEngine.UI.Toggle P2PClientToggle;
@@ -52,7 +45,6 @@ namespace AMG
 
         //其他控制器
         [SerializeField] private Live2DHelper Live2DHelper;
-        [SerializeField] private VRMHelper VRMHelper;
         [SerializeField] private LangController LangController;
         [SerializeField] private ShortcutController ShortcutController;
 
@@ -66,9 +58,6 @@ namespace AMG
             P2PClientName.text = Globle.GetComputerName();
             ModelAddButton.onClick.AddListener(() => { OnModelAddButtonClick(); });
             ModelRefreshButton.onClick.AddListener(() => { OnModelRefreshButtonClick(); });
-            //VRM
-            VRMModelAddButton.onClick.AddListener(() => { OnVRMModelAddButtonClick(); });
-            VRMModelRefreshButton.onClick.AddListener(() => { OnVRMModelRefreshButtonClick(); });
 
             ModelRemoveButton.onClick.AddListener(() => { OnModelRemoveButtonClick(); });
             ModelSelectionDropdownBox.ItemPicked += OnModelSelectionDropdownBoxSelected;
@@ -125,10 +114,6 @@ namespace AMG
                     {
                         ModelIPDropdownBox.selectedText.text = model.GetComponent<Live2DModelController>().ConnectionUUID;
                     }
-                    else if (model.GetComponent<VRMModelController>() != null)
-                    {
-                        ModelIPDropdownBox.selectedText.text = model.GetComponent<VRMModelController>().ConnectionUUID;
-                    }
                 }
             }
             else
@@ -148,10 +133,6 @@ namespace AMG
                 {
                     model.GetComponent<Live2DModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
                 }
-                else if (model.GetComponent<VRMModelController>() != null)
-                {
-                    model.GetComponent<VRMModelController>().ConnectionUUID = ModelIPDropdownBox.selectedText.text;
-                }
                 Globle.AddDataLog("Model", LangController.GetLang("LOG.SetModelIP", ModelSelectionDropdownBox.selectedText.text, ModelIPDropdownBox.selectedText.text));
             }
         }
@@ -162,19 +143,7 @@ namespace AMG
             Invoke("AddModel", 0.25f);
         }
 
-        public void OnVRMModelAddButtonClick()
-        {
-            CanvasController.CloseAllDropdown();
-            Invoke("AddVRMModel", 0.25f);
-        }
-
         public void OnModelRefreshButtonClick()
-        {
-            CanvasController.CloseAllDropdown();
-            Invoke("RefreshModels", 0.25f);
-        }
-
-        public void OnVRMModelRefreshButtonClick()
         {
             CanvasController.CloseAllDropdown();
             Invoke("RefreshModels", 0.25f);
@@ -206,11 +175,6 @@ namespace AMG
             }
         }
 
-        public void AddVRMModel()
-        {
-            VRMHelper.GetModelFromName(VRMModelDropdownBox.selectedText.text, VRMModelParent, MouseObject);
-        }
-
         public void RefreshModels()
         {
             var models = Live2DHelper.GetModelsFromAssets();
@@ -230,25 +194,6 @@ namespace AMG
             else
             {
                 ModelDropdownBox.selectedText.text = "/";
-            }
-            //处理VRM
-            var vrmmodels = VRMHelper.GetModelsFromAssets();
-            var vrmreturnCount = vrmmodels.Count;
-            if (vrmreturnCount > 0)
-            {
-                VRMModelDropdownBox.listItems = new string[vrmreturnCount];
-                int i = 0;
-                while (i < vrmreturnCount)
-                {
-                    VRMModelDropdownBox.listItems[i] = vrmmodels[i].ToString();
-                    i++;
-                }
-                VRMModelDropdownBox.selectedText.text = "/";
-                VRMModelDropdownBox.RefreshList();
-            }
-            else
-            {
-                VRMModelDropdownBox.selectedText.text = "/";
             }
         }
 
